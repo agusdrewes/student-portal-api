@@ -1,0 +1,190 @@
+{
+  "asyncapi": "2.6.0",
+  "info": {
+    "title": "Student Portal Events API",
+    "version": "1.0.0",
+    "description": "AsyncAPI spec for events related to the Student Portal API."
+  },
+  "channels": {
+    "core.user.updated": {
+      "subscribe": {
+        "summary": "User updated in core system",
+        "message": {
+          "name": "UserUpdated",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "userId": { "type": "string" },
+              "username": { "type": "string" },
+              "email": { "type": "string" },
+              "eventType": {
+                "type": "string",
+                "enum": ["created", "passwordChanged", "updated"]
+              }
+            },
+            "required": ["userId", "eventType"]
+          }
+        }
+      }
+    },
+    "core.commission.updated": {
+      "subscribe": {
+        "summary": "Commission updated in core system",
+        "message": {
+          "name": "CommissionUpdated",
+          "payload": {
+            "$ref": "#/components/schemas/Commission"
+          }
+        }
+      }
+    },
+    "core.exam.updated": {
+      "subscribe": {
+        "summary": "Exam updated in core system",
+        "message": {
+          "name": "ExamUpdated",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "examId": { "type": "string" },
+              "courseId": { "type": "string" },
+              "date": { "type": "string", "format": "date-time" },
+              "commissionId": { "type": "string" }
+            },
+            "required": ["examId", "courseId", "date"]
+          }
+        }
+      }
+    },
+    "core.event.updated": {
+      "subscribe": {
+        "summary": "Event updated in core system",
+        "message": {
+          "name": "EventUpdated",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "startDateTime": { "type": "string", "format": "date-time" },
+              "endDateTime": { "type": "string", "format": "date-time" },
+              "eventType": {
+                "type": "string",
+                "enum": ["cafeteria", "exam", "extracurricular"]
+              },
+              "title": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "required": [
+              "id",
+              "startDateTime",
+              "endDateTime",
+              "eventType",
+              "title",
+              "description"
+            ]
+          }
+        }
+      }
+    },
+    "core.purchase.updated": {
+      "subscribe": {
+        "summary": "Purchase updated in core system",
+        "message": {
+          "name": "PurchaseUpdated",
+          "payload": {
+            "$ref": "#/components/schemas/Purchase"
+          }
+        }
+      }
+    },
+    "account.deposit": {
+      "publish": {
+        "summary": "A deposit was made to an account",
+        "message": {
+          "name": "AccountDeposit",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "userId": { "type": "string" },
+              "amount": { "type": "string" },
+              "balance": { "type": "string" },
+              "date": { "type": "string", "format": "date-time" }
+            },
+            "required": ["userId", "amount", "balance", "date"]
+          }
+        }
+      }
+    },
+    "courses.commission.enrolled": {
+      "publish": {
+        "summary": "A user enrolled in a commission",
+        "message": {
+          "name": "CommissionEnrolled",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "userId": { "type": "string" },
+              "courseId": { "type": "string" },
+              "commissionId": { "type": "string" },
+              "date": { "type": "string", "format": "date-time" }
+            },
+            "required": ["userId", "courseId", "commissionId", "date"]
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Commission": {
+        "type": "object",
+        "properties": {
+          "days": { "type": "string" },
+          "startTime": { "type": "string", "format": "time" },
+          "endTime": { "type": "string", "format": "time" },
+          "shift": {
+            "type": "string",
+            "enum": ["morning", "afternoon", "night"]
+          },
+          "professorName": { "type": "string" },
+          "availableSpots": { "type": "integer" },
+          "mode": { "type": "string", "enum": ["virtual", "in person"] }
+        },
+        "required": [
+          "days",
+          "startTime",
+          "endTime",
+          "shift",
+          "professorName",
+          "availableSpots",
+          "mode"
+        ]
+      },
+      "Purchase": {
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "productCode": { "type": "string" },
+              "subtotal": { "type": "string" },
+              "quantity": { "type": "integer" }
+            },
+            "required": [
+              "name",
+              "description",
+              "productCode",
+              "subtotal",
+              "quantity"
+            ]
+          },
+          "date": { "type": "string", "format": "date-time" },
+          "total": { "type": "string" }
+        },
+        "required": ["product", "date", "total"]
+      }
+    }
+  }
+}
