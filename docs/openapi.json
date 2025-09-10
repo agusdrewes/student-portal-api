@@ -1,0 +1,570 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Student Portal API",
+    "version": "1.0.0",
+    "description": "API documentation for the Student Portal."
+  },
+  "tags": [
+    {
+      "name": "Login",
+      "description": "Operations related to user authentication."
+    },
+    {
+      "name": "Calendar",
+      "description": "Operations related to the academic calendar."
+    },
+    {
+      "name": "Courses",
+      "description": "Operations related to courses and commisions."
+    },
+    {
+      "name": "Account",
+      "description": "Operations related to user account management."
+    },
+    {
+      "name": "Purchases",
+      "description": "Operations related to user purchases."
+    },
+    {
+      "name": "AcademicHistory",
+      "description": "Operations related to the user's academic history."
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Login"],
+        "summary": "User login",
+        "description": "Authenticate a user and return a JWT token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string", "format": "password" }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/calendar": {
+      "get": {
+        "tags": ["Calendar"],
+        "summary": "Get calendar events",
+        "description": "Returns a list of events (cafeteria, exam, etc.) for the specified date range.",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format (defaults to first day of current month)",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format (defaults to last day of next month)",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of calendar events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the calendar event"
+                      },
+                      "startDateTime": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "endDateTime": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "eventType": {
+                        "type": "string",
+                        "enum": ["cafeteria", "exam", "extracurricular"]
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "Title of the event",
+                        "example": "Lunch"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "Detailed description of the event",
+                        "example": "Lunch break in the cafeteria."
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "startDateTime",
+                      "endDateTime",
+                      "eventType",
+                      "title",
+                      "description"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/calendar/{id}": {
+      "get": {
+        "tags": ["Calendar"],
+        "summary": "Get a calendar event by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Calendar event details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "eventDateTime": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "eventType": {
+                      "type": "string",
+                      "enum": ["cafeteria", "exam"]
+                    },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" }
+                  },
+                  "required": [
+                    "id",
+                    "eventDateTime",
+                    "eventType",
+                    "title",
+                    "description"
+                  ]
+                }
+              }
+            }
+          },
+          "404": { "description": "Calendar event not found" }
+        }
+      }
+    },
+    "/courses": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get all courses",
+        "description": "Returns a list of courses. Supports filtering by any field via query string.",
+        "parameters": [
+          { "name": "id", "in": "query", "schema": { "type": "string" } },
+          { "name": "name", "in": "query", "schema": { "type": "string" } },
+          { "name": "code", "in": "query", "schema": { "type": "string" } },
+          {
+            "name": "correlates",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Comma-separated list of course IDs"
+          }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of courses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Course" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{id}": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get a course by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Course details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Course" }
+              }
+            }
+          },
+          "404": { "description": "Course not found" }
+        }
+      }
+    },
+    "/courses/{id}/commisions": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get commisions for a course",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "name": "days", "in": "query", "schema": { "type": "string" } },
+          {
+            "name": "startTime",
+            "in": "query",
+            "schema": { "type": "string", "format": "time" }
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "schema": { "type": "string", "format": "time" }
+          },
+          {
+            "name": "shift",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["morning", "afternoon", "night"]
+            }
+          },
+          {
+            "name": "professorName",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "availableSpots",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["virtual", "in person"] }
+          }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of commisions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Commsion" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{id}/commisions/{commisionId}/enroll": {
+      "post": {
+        "tags": ["Courses"],
+        "summary": "Enroll in a commision for a course",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "commisionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Enrolled commision data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Commsion" }
+              }
+            }
+          },
+          "404": { "description": "Commsion not found" }
+        }
+      }
+    },
+    "/account/deposit": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Deposit money into account",
+        "description": "Deposit a specified amount into the user's account.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "description": "Amount to deposit (numeric string with 2 decimals)",
+                    "example": "2999.99"
+                  }
+                },
+                "required": ["amount"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "New account balance after deposit",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccountBalanceDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/balance": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get current account balance",
+        "description": "Returns the current balance of the user's account.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Current account balance",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccountBalanceDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/purchases": {
+      "get": {
+        "tags": ["Purchases"],
+        "summary": "Get user purchases",
+        "description": "Returns a list of user purchases with product details and total spent.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of purchases",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Purchase"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic-history": {
+      "get": {
+        "tags": ["AcademicHistory"],
+        "summary": "Get academic history",
+        "description": "Returns the user's academic history entries.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of academic history entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AcademicHistoryEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Course": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "code": { "type": "string" },
+          "correlates": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "IDs of correlated courses"
+          }
+        },
+        "required": ["id", "name", "code", "correlates"]
+      },
+      "Commsion": {
+        "type": "object",
+        "properties": {
+          "days": { "type": "string" },
+          "startTime": { "type": "string", "format": "time" },
+          "endTime": { "type": "string", "format": "time" },
+          "shift": {
+            "type": "string",
+            "enum": ["morning", "afternoon", "night"]
+          },
+          "professorName": { "type": "string" },
+          "availableSpots": { "type": "integer" },
+          "mode": { "type": "string", "enum": ["virtual", "in person"] }
+        },
+        "required": [
+          "days",
+          "startTime",
+          "endTime",
+          "shift",
+          "professorName",
+          "availableSpots",
+          "mode"
+        ]
+      },
+      "AccountBalanceDto": {
+        "type": "object",
+        "properties": {
+          "balance": {
+            "type": "string",
+            "description": "Current account balance (numeric string with 2 decimals)",
+            "example": "5000.00"
+          }
+        },
+        "required": ["balance"]
+      },
+      "Purchase": {
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "example": "Notebook" },
+              "description": {
+                "type": "string",
+                "example": "A ruled notebook for class notes."
+              },
+              "productCode": { "type": "string", "example": "NB-001" },
+              "subtotal": {
+                "type": "string",
+                "description": "Subtotal for this product (numeric string with 2 decimals)",
+                "example": "199.99"
+              },
+              "quantity": { "type": "integer", "example": 1 }
+            },
+            "required": [
+              "name",
+              "description",
+              "productCode",
+              "subtotal",
+              "quantity"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-09-07T12:00:00Z"
+          },
+          "total": {
+            "type": "string",
+            "description": "Total spent (numeric string with 2 decimals)",
+            "example": "199.99"
+          }
+        },
+        "required": ["product", "date", "total"]
+      },
+      "AcademicHistoryEntry": {
+        "type": "object",
+        "properties": {
+          "courseId": { "type": "string" },
+          "commisionId": { "type": "string" },
+          "semester": { "type": "string" },
+          "year": { "type": "string", "example": "2025" },
+          "finalNote": { "type": "string" },
+          "status": { "type": "string", "enum": ["passed", "failed"] }
+        },
+        "required": [
+          "courseId",
+          "commisionId",
+          "semester",
+          "year",
+          "finalNote",
+          "status"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
