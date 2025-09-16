@@ -7,10 +7,6 @@
   },
   "tags": [
     {
-      "name": "Login",
-      "description": "Operations related to user authentication."
-    },
-    {
       "name": "Calendar",
       "description": "Operations related to the academic calendar."
     },
@@ -29,14 +25,19 @@
     {
       "name": "AcademicHistory",
       "description": "Operations related to the user's academic history."
+    },
+    {
+      "name": "EXTERNAL ENDPOINTS",
+      "description": "Endpoints intended for external integrations."
     }
   ],
   "paths": {
-    "/auth/login": {
+    "/external/account/deposit": {
       "post": {
-        "tags": ["Login"],
-        "summary": "User login",
-        "description": "Authenticate a user and return a JWT token.",
+        "tags": ["EXTERNAL ENDPOINTS"],
+        "summary": "Deposit money into account (external)",
+        "description": "Deposit a specified amount into the user's account using a credit/debit card via an external integration.",
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -44,34 +45,48 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "username": { "type": "string" },
-                  "password": { "type": "string", "format": "password" }
+                  "amount": {
+                    "type": "string",
+                    "description": "Amount to deposit (numeric string with 2 decimals)",
+                    "example": "2999.99"
+                  },
+                  "cardNumber": {
+                    "type": "string",
+                    "description": "Card number (16 digits)",
+                    "pattern": "^\\d{16}$",
+                    "example": "1234567812345678"
+                  },
+                  "expiration": {
+                    "type": "string",
+                    "description": "Card expiration date (MM/YY)",
+                    "pattern": "^(0[1-9]|1[0-2])\\/(\\d{2})$",
+                    "example": "12/27"
+                  },
+                  "cvv": {
+                    "type": "string",
+                    "description": "Card CVV (3 or 4 digits)",
+                    "pattern": "^\\d{3,4}$",
+                    "example": "123"
+                  }
                 },
-                "required": ["username", "password"]
+                "required": ["amount", "cardNumber", "expiration", "cvv"]
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful login",
+            "description": "New account balance after deposit",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "access_token": { "type": "string" }
-                  }
-                }
+                "schema": { "$ref": "#/components/schemas/AccountBalanceDto" }
               }
             }
-          },
-          "401": {
-            "description": "Invalid credentials"
           }
         }
       }
     },
+    
     "/calendar": {
       "get": {
         "tags": ["Calendar"],
@@ -307,7 +322,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Commsion" }
+                  "items": { "$ref": "#/components/schemas/Commission" }
                 }
               }
             }
@@ -315,10 +330,10 @@
         }
       }
     },
-    "/courses/{id}/commisions/{commisionId}/enroll": {
+    "/courses/{id}/commisions/{commisionId}/enrollment": {
       "post": {
         "tags": ["Courses"],
-        "summary": "Enroll in a commision for a course",
+        "summary": "Enroll in a commission for a course",
         "parameters": [
           {
             "name": "id",
@@ -336,14 +351,39 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Enrolled commision data",
+            "description": "Enrolled commission data",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Commsion" }
+                "schema": { "$ref": "#/components/schemas/Commission" }
               }
             }
           },
-          "404": { "description": "Commsion not found" }
+          "404": { "description": "Commission not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Courses"],
+        "summary": "Withdraw from a commission for a course",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "commisionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Successfully withdrawn from commission"
+          },
+          "404": { "description": "Commission not found" }
         }
       }
     },
@@ -351,7 +391,7 @@
       "post": {
         "tags": ["Account"],
         "summary": "Deposit money into account",
-        "description": "Deposit a specified amount into the user's account.",
+        "description": "Deposit a specified amount into the user's account using a credit/debit card.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -364,9 +404,27 @@
                     "type": "string",
                     "description": "Amount to deposit (numeric string with 2 decimals)",
                     "example": "2999.99"
+                  },
+                  "cardNumber": {
+                    "type": "string",
+                    "description": "Card number (16 digits)",
+                    "pattern": "^\\d{16}$",
+                    "example": "1234567812345678"
+                  },
+                  "expiration": {
+                    "type": "string",
+                    "description": "Card expiration date (MM/YY)",
+                    "pattern": "^(0[1-9]|1[0-2])\\/(\\d{2})$",
+                    "example": "12/27"
+                  },
+                  "cvv": {
+                    "type": "string",
+                    "description": "Card CVV (3 or 4 digits)",
+                    "pattern": "^\\d{3,4}$",
+                    "example": "123"
                   }
                 },
-                "required": ["amount"]
+                "required": ["amount", "cardNumber", "expiration", "cvv"]
               }
             }
           }
@@ -464,7 +522,7 @@
         },
         "required": ["id", "name", "code", "correlates"]
       },
-      "Commsion": {
+      "Commission": {
         "type": "object",
         "properties": {
           "days": { "type": "string" },
@@ -544,7 +602,10 @@
         "properties": {
           "courseId": { "type": "string" },
           "commisionId": { "type": "string" },
-          "semester": { "type": "string" },
+          "semester": {
+            "type": "string",
+            "enum": ["1C", "2C"]
+          },
           "year": { "type": "string", "example": "2025" },
           "finalNote": { "type": "string" },
           "status": { "type": "string", "enum": ["passed", "failed"] }
