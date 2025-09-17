@@ -1,164 +1,457 @@
 {
-  "asyncapi": "2.6.0",
+  "asyncapi": "3.0.0",
   "info": {
     "title": "Student Portal Events API",
     "version": "1.0.0",
     "description": "AsyncAPI spec for events related to the Student Portal API."
   },
   "channels": {
-    
-    "core.commission.updated": {
-      "subscribe": {
-        "summary": "Commission updated in core system",
-        "message": {
-          "name": "CommissionUpdated",
-          "payload": {
-            "$ref": "#/components/schemas/Commission"
-          }
+    "commission.updated": {
+      "address": "commission.updated",
+      "messages": {
+        "CommissionUpdated": {
+          "$ref": "#/components/messages/CommissionUpdated"
         }
       }
     },
-    "core.exam.updated": {
-      "subscribe": {
-        "summary": "Exam updated in core system",
-        "message": {
-          "name": "ExamUpdated",
-          "payload": {
-            "type": "object",
-            "properties": {
-              "examId": { "type": "string" },
-              "courseId": { "type": "string" },
-              "date": { "type": "string", "format": "date-time" },
-              "commissionId": { "type": "string" }
-            },
-            "required": ["examId", "courseId", "date"]
-          }
+    "exam.updated": {
+      "address": "exam.updated",
+      "messages": {
+        "ExamUpdated": {
+          "$ref": "#/components/messages/ExamUpdated"
         }
       }
     },
-    "core.event.updated": {
-      "subscribe": {
-        "summary": "Event updated in core system",
-        "message": {
-          "name": "EventUpdated",
-          "payload": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "startDateTime": { "type": "string", "format": "date-time" },
-              "endDateTime": { "type": "string", "format": "date-time" },
-              "eventType": {
-                "type": "string",
-                "enum": ["cafeteria", "exam", "extracurricular"]
-              },
-              "title": { "type": "string" },
-              "description": { "type": "string" }
-            },
-            "required": [
-              "id",
-              "startDateTime",
-              "endDateTime",
-              "eventType",
-              "title",
-              "description"
-            ]
-          }
+    "event.updated": {
+      "address": "event.updated",
+      "messages": {
+        "EventUpdated": {
+          "$ref": "#/components/messages/EventUpdated"
         }
       }
     },
-    "core.purchase.updated": {
-      "subscribe": {
-        "summary": "Purchase updated in core system",
-        "message": {
-          "name": "PurchaseUpdated",
-          "payload": {
-            "$ref": "#/components/schemas/Purchase"
-          }
+    "purchase.updated": {
+      "address": "purchase.updated",
+      "messages": {
+        "PurchaseUpdated": {
+          "$ref": "#/components/messages/PurchaseUpdated"
         }
       }
     },
-    
     "courses.commission.enrollment.updated": {
-      "publish": {
-        "summary": "A user enrolled in or withdrew from a commission",
-        "message": {
-          "name": "CommissionEnrollmentUpdated",
-          "payload": {
-            "type": "object",
-            "properties": {
-              "userId": { "type": "string" },
-              "courseId": { "type": "string" },
-              "commissionId": { "type": "string" },
-              "date": { "type": "string", "format": "date-time" },
-              "action": {
-                "type": "string",
-                "enum": ["enrolled", "withdrew"],
-                "description": "Indicates if the student is enrolling or withdrawing"
-              }
-            },
-            "required": ["userId", "courseId", "commissionId", "date", "action"]
-          }
+      "address": "courses.commission.enrollment.updated",
+      "messages": {
+        "CommissionEnrollmentUpdated": {
+          "$ref": "#/components/messages/CommissionEnrollmentUpdated"
+        }
+      }
+    },
+    "library.sanction.updated": {
+      "address": "library.sanction.updated",
+      "messages": {
+        "LibrarySanctionUpdated": {
+          "$ref": "#/components/messages/LibrarySanctionUpdated"
+        }
+      }
+    },
+    "exam.grade.published": {
+      "address": "exam.grade.published",
+      "messages": {
+        "ExamGradePublished": {
+          "$ref": "#/components/messages/ExamGradePublished"
+        }
+      }
+    },
+    "gradebook.act.closed": {
+      "address": "gradebook.act.closed",
+      "messages": {
+        "GradebookActClosed": {
+          "$ref": "#/components/messages/GradebookActClosed"
+        }
+      }
+    },
+    "course.attendance.published": {
+      "address": "course.attendance.published",
+      "messages": {
+        "CourseAttendancePublished": {
+          "$ref": "#/components/messages/CourseAttendancePublished"
         }
       }
     }
   },
-  "components": {
-    "schemas": {
-      "Commission": {
-        "type": "object",
-        "properties": {
-          "days": { "type": "string" },
-          "semester": {
-            "type": "string",
-            "enum": ["1C", "2C"]
-          },
-          "year": { "type": "string" },
-          "startTime": { "type": "string", "format": "time" },
-          "endTime": { "type": "string", "format": "time" },
-          "shift": {
-            "type": "string",
-            "enum": ["morning", "afternoon", "night"]
-          },
-          "professorName": { "type": "string" },
-          "availableSpots": { "type": "integer" },
-          "mode": { "type": "string", "enum": ["virtual", "in person"] }
-        },
-        "required": [
-          "days",
-          "startTime",
-          "endTime",
-          "shift",
-          "professorName",
-          "availableSpots",
-          "mode",
-          "semester",
-          "year"
-        ]
+  "operations": {
+    "subscribeCommissionUpdated": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/commission.updated"
       },
-      "Purchase": {
-        "type": "object",
-        "properties": {
-          "product": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string" },
-              "description": { "type": "string" },
-              "productCode": { "type": "string" },
-              "subtotal": { "type": "string" },
-              "quantity": { "type": "integer" }
+      "summary": "Commission updated",
+      "messages": [
+        {
+          "$ref": "#/channels/commission.updated/messages/CommissionUpdated"
+        }
+      ]
+    },
+    "subscribeExamUpdated": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/exam.updated"
+      },
+      "summary": "Exam updated",
+      "messages": [
+        {
+          "$ref": "#/channels/exam.updated/messages/ExamUpdated"
+        }
+      ]
+    },
+    "subscribeEventUpdated": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/event.updated"
+      },
+      "summary": "Event updated",
+      "messages": [
+        {
+          "$ref": "#/channels/event.updated/messages/EventUpdated"
+        }
+      ]
+    },
+    "subscribePurchaseUpdated": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/purchase.updated"
+      },
+      "summary": "Purchase updated",
+      "messages": [
+        {
+          "$ref": "#/channels/purchase.updated/messages/PurchaseUpdated"
+        }
+      ]
+    },
+    "subscribeLibrarySanctionUpdated": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/library.sanction.updated"
+      },
+      "summary": "Library sanction updated",
+      "messages": [
+        {
+          "$ref": "#/channels/library.sanction.updated/messages/LibrarySanctionUpdated"
+        }
+      ]
+    },
+    "subscribeExamGradePublished": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/exam.grade.published"
+      },
+      "summary": "Exam grade published",
+      "messages": [
+        {
+          "$ref": "#/channels/exam.grade.published/messages/ExamGradePublished"
+        }
+      ]
+    },
+    "subscribeGradebookActClosed": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/gradebook.act.closed"
+      },
+      "summary": "Gradebook act closed",
+      "messages": [
+        {
+          "$ref": "#/channels/gradebook.act.closed/messages/GradebookActClosed"
+        }
+      ]
+    },
+    "subscribeCourseAttendancePublished": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/course.attendance.published"
+      },
+      "summary": "Course attendance published",
+      "messages": [
+        {
+          "$ref": "#/channels/course.attendance.published/messages/CourseAttendancePublished"
+        }
+      ]
+    },
+    "publishCommissionEnrollmentUpdated": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/courses.commission.enrollment.updated"
+      },
+      "summary": "A user enrolled in or withdrew from a commission",
+      "messages": [
+        {
+          "$ref": "#/channels/courses.commission.enrollment.updated/messages/CommissionEnrollmentUpdated"
+        }
+      ]
+    }
+  },
+  "components": {
+    "messages": {
+      "CommissionUpdated": {
+        "name": "CommissionUpdated",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "courseId": { "type": "string" },
+            "commissionId": { "type": "string" },
+            "days": { "type": "string" },
+            "semester": {
+              "type": "string",
+              "enum": ["1C", "2C"]
             },
-            "required": [
-              "name",
-              "description",
-              "productCode",
-              "subtotal",
-              "quantity"
-            ]
+            "year": { "type": "string" },
+            "startTime": { "type": "string", "format": "time" },
+            "endTime": { "type": "string", "format": "time" },
+            "shift": {
+              "type": "string",
+              "enum": ["morning", "afternoon", "night"]
+            },
+            "professorName": { "type": "string" },
+            "availableSpots": { "type": "integer" },
+            "totalSpots": { "type": "integer" },
+            "mode": { "type": "string", "enum": ["virtual", "in person"] },
+            "date": { "type": "string", "format": "date-time" },
+            "action": {
+              "type": "string",
+              "enum": ["update", "delete"],
+              "description": "Indicates if the action is an update or delete"
+            }
           },
-          "date": { "type": "string", "format": "date-time" },
-          "total": { "type": "string" }
-        },
-        "required": ["product", "date", "total"]
+          "required": [
+            "courseId",
+            "commissionId",
+            "days",
+            "startTime",
+            "endTime",
+            "shift",
+            "professorName",
+            "availableSpots",
+            "totalSpots",
+            "mode",
+            "semester",
+            "year",
+            "date",
+            "action"
+          ]
+        }
+      },
+      "ExamUpdated": {
+        "name": "ExamUpdated",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "examId": { "type": "string" },
+            "courseId": { "type": "string" },
+            "date": { "type": "string", "format": "date-time" },
+            "commissionId": { "type": "string" },
+            "action": {
+              "type": "string",
+              "enum": ["update", "delete"],
+              "description": "Indicates if the action is an update or delete"
+            }
+          },
+          "required": ["examId", "courseId", "date", "action"]
+        }
+      },
+      "EventUpdated": {
+        "name": "EventUpdated",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "startDateTime": { 
+              "type": "string", 
+              "format": "date-time",
+              "example": "2025-09-17T14:30:00Z"
+            },
+            "endDateTime": { 
+              "type": "string", 
+              "format": "date-time",
+              "example": "2025-09-17T16:00:00Z"
+            },
+            "eventType": {
+              "type": "string",
+              "enum": ["cafeteria", "exam", "extracurricular"]
+            },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "action": {
+              "type": "string",
+              "enum": ["updated", "deleted"],
+              "description": "Indicates if the event was updated or deleted"
+            },
+            "user": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "role": { 
+                  "type": "string",
+                  "enum": ["student", "professor"]
+                }
+              },
+              "required": ["id", "role"]
+            },
+            "date": { "type": "string", "format": "date-time" }
+          },
+          "required": [
+            "id",
+            "startDateTime",
+            "endDateTime",
+            "eventType",
+            "title",
+            "action",
+            "user",
+            "date"
+          ]
+        }
+      },
+      "PurchaseUpdated": {
+        "name": "PurchaseUpdated",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "product": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "description": { "type": "string" },
+                "productCode": { "type": "string" },
+                "subtotal": { "type": "string" },
+                "quantity": { "type": "integer" }
+              },
+              "required": [
+                "name",
+                "description",
+                "productCode",
+                "subtotal",
+                "quantity"
+              ]
+            },
+            "total": { "type": "string" },
+            "date": { "type": "string", "format": "date-time" },
+            "action": {
+              "type": "string",
+              "enum": ["update", "delete"],
+              "description": "Indicates if the action is an update or delete"
+            }
+          },
+          "required": ["product", "total", "date", "action"]
+        }
+      },
+      "CommissionEnrollmentUpdated": {
+        "name": "CommissionEnrollmentUpdated",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "courseId": { "type": "string" },
+            "commissionId": { "type": "string" },
+            "date": { "type": "string", "format": "date-time" },
+            "action": {
+              "type": "string",
+              "enum": ["update", "delete"],
+              "description": "Indicates if the action is an update or delete"
+            }
+          },
+          "required": ["userId", "courseId", "commissionId", "date", "action"]
+        }
+      },
+      "LibrarySanctionUpdated": {
+        "name": "LibrarySanctionUpdated",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "date": { "type": "string", "format": "date-time" },
+            "action": {
+              "type": "string",
+              "enum": ["update", "delete"],
+              "description": "Indicates if the action is an update or delete"
+            }
+          },
+          "required": ["userId", "date", "action"]
+        }
+      },
+      "ExamGradePublished": {
+        "name": "ExamGradePublished",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "eventId": { "type": "string", "description": "Unique identifier for the event" },
+            "occurredAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the event occurred" },
+            "producer": { "type": "string", "description": "Source of the event" },
+            "courseId": { "type": "string", "description": "Identifier for the course" },
+            "assessmentId": { "type": "string", "description": "Identifier for the assessment" },
+            "studentId": { "type": "string", "description": "Identifier for the student" },
+            "grade": { "type": "string", "description": "Grade awarded" },
+            "period": { "type": "string", "description": "Period in which the grade was awarded" },
+            "action": {
+              "type": "string",
+              "enum": ["update", "delete"],
+              "description": "Indicates if the action is an update or delete"
+            }
+          },
+          "required": ["eventId", "occurredAt", "producer", "courseId", "assessmentId", "studentId", "grade", "period", "action"]
+        }
+      },
+      "GradebookActClosed": {
+        "name": "GradebookActClosed",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "eventId": { "type": "string", "description": "Unique identifier for the event" },
+            "occurredAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the event occurred" },
+            "producer": { "type": "string", "description": "Source of the event" },
+            "actaId": { "type": "string", "description": "Identifier for the act" },
+            "cursoId": { "type": "string", "description": "Identifier for the course" },
+            "periodo": { "type": "string", "description": "Period in which the act was closed" },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "studentId": { "type": "string", "description": "Identifier for the student" },
+                  "estadoFinal": { "type": "string", "description": "Final status of the student" },
+                  "notaMateria": { "type": "string", "description": "Subject grade" }
+                },
+                "required": ["studentId", "estadoFinal", "notaMateria"]
+              }
+            },
+            "action": {
+              "type": "string",
+              "enum": ["update", "delete"],
+              "description": "Indicates if the action is an update or delete"
+            }
+          },
+          "required": ["eventId", "occurredAt", "producer", "actaId", "cursoId", "periodo", "items", "action"]
+        }
+      },
+      "CourseAttendancePublished": {
+        "name": "CourseAttendancePublished",
+        "payload": {
+          "type": "object",
+          "properties": {
+            "eventId": { "type": "string", "description": "Unique identifier for the event" },
+            "producer": { "type": "string", "description": "Source of the event" },
+            "occurredAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the event occurred" },
+            "schemaVersion": { "type": "string", "description": "Schema version" },
+            "courseId": { "type": "string", "description": "Identifier for the course" },
+            "periodo": { "type": "string", "description": "Period in which the attendance was published" },
+            "studentId": { "type": "string", "description": "Identifier for the student" },
+            "AttendanceTypification": { "type": "string", "description": "Attendance typification" },
+            "publishedBy": { "type": "string", "description": "Identifier of who published the attendance" },
+            "action": {
+              "type": "string",
+              "enum": ["update", "delete"],
+              "description": "Indicates if the action is an update or delete"
+            }
+          },
+          "required": ["eventId", "producer", "occurredAt", "schemaVersion", "courseId", "periodo", "studentId", "AttendanceTypification", "publishedBy", "action"]
+        }
       }
     }
   }

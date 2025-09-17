@@ -12,7 +12,7 @@
     },
     {
       "name": "Courses",
-      "description": "Operations related to courses and commisions."
+      "description": "Operations related to courses and commissions."
     },
     {
       "name": "Account",
@@ -25,6 +25,10 @@
     {
       "name": "AcademicHistory",
       "description": "Operations related to the user's academic history."
+    },
+    {
+      "name": "Notifications",
+      "description": "Operations related to user notifications."
     },
     {
       "name": "EXTERNAL ENDPOINTS",
@@ -45,6 +49,11 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Full name of the account holder",
+                    "example": "John Doe"
+                  },
                   "amount": {
                     "type": "string",
                     "description": "Amount to deposit (numeric string with 2 decimals)",
@@ -80,6 +89,65 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/AccountBalanceDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/external/email/send": {
+      "post": {
+        "tags": ["EXTERNAL ENDPOINTS"],
+        "summary": "Send email (external)",
+        "description": "Send an email with subject and body content via an external integration.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "description": "Email subject line",
+                    "example": "Important Update"
+                  },
+                  "htmlBody": {
+                    "type": "string",
+                    "description": "HTML email body content",
+                    "example": "<h1>Hello</h1><p>This is an important update.</p>"
+                  },
+                  "txtBody": {
+                    "type": "string",
+                    "description": "Plain text email body content",
+                    "example": "Hello\n\nThis is an important update."
+                  }
+                },
+                "required": ["subject", "htmlBody", "txtBody"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Email sent successfully"
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
               }
             }
           }
@@ -213,7 +281,7 @@
     "/courses": {
       "get": {
         "tags": ["Courses"],
-        "summary": "Get all courses",
+        "summary": "Get all courses for the career of the authenticated user",
         "description": "Returns a list of courses. Supports filtering by any field via query string.",
         "parameters": [
           { "name": "id", "in": "query", "schema": { "type": "string" } },
@@ -268,10 +336,10 @@
         }
       }
     },
-    "/courses/{id}/commisions": {
+    "/courses/{id}/commissions": {
       "get": {
         "tags": ["Courses"],
-        "summary": "Get commisions for a course",
+        "summary": "Get commissions for a course",
         "parameters": [
           {
             "name": "id",
@@ -317,7 +385,7 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "A list of commisions",
+            "description": "A list of commissions",
             "content": {
               "application/json": {
                 "schema": {
@@ -330,7 +398,7 @@
         }
       }
     },
-    "/courses/{id}/commisions/{commisionId}/enrollment": {
+    "/courses/{id}/commissions/{commissionId}/enroll": {
       "post": {
         "tags": ["Courses"],
         "summary": "Enroll in a commission for a course",
@@ -342,7 +410,7 @@
             "schema": { "type": "string" }
           },
           {
-            "name": "commisionId",
+            "name": "commissionId",
             "in": "path",
             "required": true,
             "schema": { "type": "string" }
@@ -372,7 +440,7 @@
             "schema": { "type": "string" }
           },
           {
-            "name": "commisionId",
+            "name": "commissionId",
             "in": "path",
             "required": true,
             "schema": { "type": "string" }
@@ -494,10 +562,172 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "object",
+                  "properties": {
+                    "degreeName": { "type": "string" },
+                    "degreeCode": { "type": "string" },
+                    "courses": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AcademicHistoryEntry" }
+                    }
+                  },
+                  "required": ["degreeName", "degreeCode", "courses"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/enrolled": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get all enrolled courses for the authenticated user",
+        "description": "Returns a list of courses the user is currently enrolled in.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of enrolled courses",
+            "content": {
+              "application/json": {
+                "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AcademicHistoryEntry"
+                    "type": "object",
+                    "properties": {
+                      "professorName": { "type": "string" },
+                      "startTime": { "type": "string", "format": "time" },
+                      "endTime": { "type": "string", "format": "time" },
+                      "classroom": { "type": "string" },
+                      "attendance": {
+                        "type": "object",
+                        "properties": {
+                          "total": { "type": "integer" },
+                          "assists": { "type": "integer" },
+                          "absents": { "type": "integer" },
+                          "assistPercentage": { "type": "number", "format": "float" }
+                        },
+                        "required": ["total", "assists", "absents", "assistPercentage"]
+                      },
+                      "exams": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "title": { "type": "string" },
+                            "date": { "type": "string", "format": "date" },
+                            "weight": { "type": "number", "format": "float" },
+                            "grade": { "type": "number", "format": "float" },
+                            "status": { "type": "string", "enum": ["pass", "fail"] }
+                          },
+                          "required": ["title", "date", "weight", "grade", "status"]
+                        }
+                      }
+                    },
+                    "required": ["professorName", "startTime", "endTime", "classroom", "attendance", "exams"]
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/enrolled/{id}": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get details of an enrolled course by ID",
+        "description": "Returns details of a specific course the user is enrolled in.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Details of the enrolled course",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "professorName": { "type": "string" },
+                    "startTime": { "type": "string", "format": "time" },
+                    "endTime": { "type": "string", "format": "time" },
+                    "classroom": { "type": "string" },
+                    "attendance": {
+                      "type": "object",
+                      "properties": {
+                        "total": { "type": "integer" },
+                        "assists": { "type": "integer" },
+                        "absents": { "type": "integer" },
+                        "assistPercentage": { "type": "number", "format": "float" }
+                      },
+                      "required": ["total", "assists", "absents", "assistPercentage"]
+                    },
+                    "exams": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": { "type": "string" },
+                          "date": { "type": "string", "format": "date" },
+                          "weight": { "type": "number", "format": "float" },
+                          "grade": { "type": "number", "format": "float" },
+                          "status": { "type": "string", "enum": ["pass", "fail"] }
+                        },
+                        "required": ["title", "date", "weight", "grade", "status"]
+                      }
+                    }
+                  },
+                  "required": ["professorName", "startTime", "endTime", "classroom", "attendance", "exams"]
+                }
+              }
+            }
+          },
+          "404": { "description": "Enrolled course not found" }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get latest notifications",
+        "description": "Returns the latest 10 notifications (read or unread) for the authenticated user.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of latest notifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Notification" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/unread": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get unread notifications",
+        "description": "Returns all unread notifications for the authenticated user.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of unread notifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Notification" }
                 }
               }
             }
@@ -532,18 +762,28 @@
             "type": "string",
             "enum": ["morning", "afternoon", "night"]
           },
+          "classRoom": { "type": "string" },
           "professorName": { "type": "string" },
           "availableSpots": { "type": "integer" },
-          "mode": { "type": "string", "enum": ["virtual", "in person"] }
+          "totalSpots": { "type": "integer" },
+          "mode": { "type": "string", "enum": ["virtual", "in person"] },
+          "price": {
+            "type": "string",
+            "description": "Price of the commission",
+            "example": "1500.00"
+          }
         },
         "required": [
           "days",
           "startTime",
           "endTime",
           "shift",
+          "classRoom",
           "professorName",
           "availableSpots",
-          "mode"
+          "totalSpots",
+          "mode",
+          "price"
         ]
       },
       "AccountBalanceDto": {
@@ -601,7 +841,7 @@
         "type": "object",
         "properties": {
           "courseId": { "type": "string" },
-          "commisionId": { "type": "string" },
+          "commissionId": { "type": "string" },
           "semester": {
             "type": "string",
             "enum": ["1C", "2C"]
@@ -612,12 +852,27 @@
         },
         "required": [
           "courseId",
-          "commisionId",
+          "commissionId",
           "semester",
           "year",
           "finalNote",
           "status"
         ]
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Unique identifier for the notification" },
+          "type": { 
+            "type": "string", 
+            "enum": ["sanction", "event", "exam"],
+            "description": "Type of notification"
+          },
+          "title": { "type": "string", "description": "Title of the notification" },
+          "description": { "type": "string", "description": "Description of the notification" },
+          "redirectId": { "type": "string", "description": "ID to redirect to when notification is clicked" }
+        },
+        "required": ["id", "type", "title", "redirectId"]
       }
     },
     "securitySchemes": {
