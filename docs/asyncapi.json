@@ -321,18 +321,15 @@
                 "type": "object",
                 "properties": {
                   "name": { "type": "string" },
-                  "description": { "type": "string" },
-                  "productCode": { "type": "string" },
                   "subtotal": { "type": "string" },
-                  "quantity": { "type": "integer" }
+                  "quantity": { "type": "integer" },
+                  "variantData": {
+                    "type": "object",
+                    "description": "Dynamic product variant data with any key-value pairs",
+                    "additionalProperties": true
+                  }
                 },
-                "required": [
-                  "name",
-                  "description",
-                  "productCode",
-                  "subtotal",
-                  "quantity"
-                ]
+                "required": ["name", "subtotal", "quantity"]
               }
             },
             "total": { "type": "string" },
