@@ -30,11 +30,11 @@
         }
       }
     },
-    "purchase.updated": {
-      "address": "purchase.updated",
+    "purchase.approved": {
+      "address": "purchase.approved",
       "messages": {
-        "PurchaseUpdated": {
-          "$ref": "#/components/messages/PurchaseUpdated"
+        "PurchaseApproved": {
+          "$ref": "#/components/messages/PurchaseApproved"
         }
       }
     },
@@ -116,15 +116,15 @@
         }
       ]
     },
-    "subscribePurchaseUpdated": {
+    "subscribePurchaseApproved": {
       "action": "receive",
       "channel": {
-        "$ref": "#/channels/purchase.updated"
+        "$ref": "#/channels/purchase.approved"
       },
-      "summary": "Purchase updated",
+      "summary": "Purchase approved",
       "messages": [
         {
-          "$ref": "#/channels/purchase.updated/messages/PurchaseUpdated"
+          "$ref": "#/channels/purchase.approved/messages/PurchaseApproved"
         }
       ]
     },
@@ -309,12 +309,15 @@
           ]
         }
       },
-      "PurchaseUpdated": {
-        "name": "PurchaseUpdated",
+      "PurchaseApproved": {
+        "name": "PurchaseApproved",
         "payload": {
           "type": "object",
           "properties": {
-            "product": {
+            "storeName": { "type": "string" },
+            "products": {              
+              "type": "array",
+              "items": {
               "type": "object",
               "properties": {
                 "name": { "type": "string" },
@@ -330,16 +333,12 @@
                 "subtotal",
                 "quantity"
               ]
-            },
-            "total": { "type": "string" },
-            "date": { "type": "string", "format": "date-time" },
-            "action": {
-              "type": "string",
-              "enum": ["update", "delete"],
-              "description": "Indicates if the action is an update or delete"
             }
           },
-          "required": ["product", "total", "date", "action"]
+            "total": { "type": "string" },
+            "date": { "type": "string", "format": "date-time" }
+          },
+          "required": ["storeName","products", "total", "date"]
         }
       },
       "CommissionEnrollmentUpdated": {
