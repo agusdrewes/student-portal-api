@@ -1,24 +1,20 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 
-
-@Entity()
-export class User {
+@Entity('courses')
+export class Course {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  firstName: string;
-
-  @Column()
-  lastName: string;
-
   @Column({ unique: true })
-  email: string;
+  code: string; // Ej: "MAT101"
 
   @Column()
-  password: string;
+  name: string;
 
-  @OneToMany(() => Enrollment, (enrollment) => enrollment.user)
+  @Column({ nullable: true })
+  description?: string;
+
+  @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
   enrollments: Enrollment[];
 }
