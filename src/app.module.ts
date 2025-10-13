@@ -5,6 +5,7 @@ import { typeOrmAsyncConfig } from './config/typeorm.config';
 import { UserModule } from './user/user.module'; // ✅ importa tu módulo
 import { CoursesModule } from './courses/courses.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
+import { CalendarModule } from './calendar/calendar.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { EnrollmentModule } from './enrollment/enrollment.module';
     UserModule, 
     CoursesModule,
     EnrollmentModule,
+    CalendarModule
   ],
 })
 export class AppModule {}
