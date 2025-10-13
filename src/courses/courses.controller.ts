@@ -1,19 +1,23 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
-import { Course } from './entities/course.entity';
 
 @Controller('courses')
 export class CoursesController {
-  constructor(private readonly service: CoursesService) {}
+  constructor(private readonly coursesService: CoursesService) {}
 
   @Get()
-  findAll(): Promise<Course[]> {
-    return this.service.findAll();
+  findAll() {
+    return this.coursesService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.coursesService.findOne(id);
   }
 
   @Post()
-  create(@Body() dto: CreateCourseDto): Promise<Course> {
-    return this.service.create(dto);
+  create(@Body() dto: CreateCourseDto) {
+    return this.coursesService.create(dto);
   }
 }

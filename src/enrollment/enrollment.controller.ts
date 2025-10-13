@@ -1,19 +1,26 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
-import { EnrollmentService } from './enrollment.service';
+import { Controller, Post, Delete, Param, Body, Get, Query } from '@nestjs/common';
+import { EnrollmentsService } from './enrollment.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
-import { Enrollment } from './entities/enrollment.entity';
 
-@Controller('enrollments')
-export class EnrollmentController {
-  constructor(private readonly service: EnrollmentService) {}
+@Controller('courses/:courseId/commissions/:commissionId')
+export class EnrollmentsController {
+  constructor(private readonly enrollmentsService: EnrollmentsService) { }
 
-  @Get()
-  findAll(): Promise<Enrollment[]> {
-    return this.service.findAll();
+  @Post('enroll')
+  enroll(
+    @Param('courseId') courseId: number,
+    @Param('commissionId') commissionId: number,
+    @Body('userId') userId: number,
+  ) {
+    return this.enrollmentsService.enroll({ userId, courseId, commissionId });
   }
 
-  @Post()
-  enroll(@Body() dto: CreateEnrollmentDto): Promise<Enrollment> {
-    return this.service.enroll(dto);
+  @Delete('enroll')
+  withdraw(
+    @Param('courseId') courseId: number,
+    @Param('commissionId') commissionId: number,
+    @Body('userId') userId: number,
+  ) {
+    return this.enrollmentsService.withdraw(userId, commissionId);
   }
 }

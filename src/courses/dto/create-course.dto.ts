@@ -1,12 +1,17 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsArray } from 'class-validator';
 
 export class CreateCourseDto {
-  @IsNotEmpty()
+  @IsString()
   code: string;
 
-  @IsNotEmpty()
+  @IsString()
   name: string;
 
   @IsOptional()
+  @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsArray()
+  correlates?: number[];
 }

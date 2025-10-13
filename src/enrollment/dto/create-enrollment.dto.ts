@@ -1,9 +1,12 @@
-import { IsInt } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class CreateEnrollmentDto {
-  @IsInt()
+  @IsNumber()
   userId: number;
 
-  @IsInt()
+  @IsNumber()
   courseId: number;
+
+  @IsNumber()
+  commissionId: number;
 }

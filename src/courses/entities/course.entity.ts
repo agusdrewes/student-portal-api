@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Enrollment } from '../../enrollment/entities/enrollment.entity';
+import { Commission } from '../../commission/entities/commission.entity';
 
 @Entity('courses')
 export class Course {
@@ -7,7 +7,7 @@ export class Course {
   id: number;
 
   @Column({ unique: true })
-  code: string; // Ej: "MAT101"
+  code: string;
 
   @Column()
   name: string;
@@ -15,6 +15,10 @@ export class Course {
   @Column({ nullable: true })
   description?: string;
 
-  @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
-  enrollments: Enrollment[];
+  // correlativas: lista de IDs de otros cursos
+  @Column('int', { array: true, default: [] })
+  correlates: number[];
+
+  @OneToMany(() => Commission, (commission) => commission.course)
+  commissions: Commission[];
 }

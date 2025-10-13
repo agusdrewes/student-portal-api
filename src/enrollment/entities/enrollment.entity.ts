@@ -1,9 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Course } from '../../courses/entities/course.entity';
+import { Commission } from '../../commission/entities/commission.entity';
 
 @Entity('enrollments')
-@Unique(['user', 'course'])
 export class Enrollment {
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,6 +11,9 @@ export class Enrollment {
   @ManyToOne(() => User, (user) => user.enrollments, { onDelete: 'CASCADE' })
   user: User;
 
-  @ManyToOne(() => Course, (course) => course.enrollments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Course, { onDelete: 'CASCADE' })
   course: Course;
+
+  @ManyToOne(() => Commission, (commission) => commission.enrollments, { onDelete: 'CASCADE' })
+  commission: Commission;
 }
