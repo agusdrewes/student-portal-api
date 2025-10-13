@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Commission } from '../../commission/entities/commission.entity';
+import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 
 @Entity('courses')
 export class Course {
@@ -21,4 +22,8 @@ export class Course {
 
   @OneToMany(() => Commission, (commission) => commission.course)
   commissions: Commission[];
+
+  @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
+  enrollments: Enrollment[];
+
 }

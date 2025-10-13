@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Enrollment } from './entities/enrollment.entity';
@@ -25,14 +29,14 @@ export class EnrollmentsService {
     const course = await this.courseRepo.findOne({ where: { id: dto.courseId } });
     const commission = await this.commissionRepo.findOne({ where: { id: dto.commissionId } });
 
-    if (!user || !course || !commission) throw new NotFoundException('Invalid data');
+    if (!user || !course || !commission) {
+      throw new NotFoundException('Invalid enrollment data');
+    }
 
-    // validar si hay cupos
     if (commission.availableSpots <= 0) {
       throw new BadRequestException('No available spots');
     }
 
-    // crear inscripción
     const enrollment = this.enrollmentRepo.create({ user, course, commission });
     commission.availableSpots -= 1;
     await this.commissionRepo.save(commission);
@@ -44,6 +48,7 @@ export class EnrollmentsService {
       where: { user: { id: userId }, commission: { id: commissionId } },
       relations: ['commission'],
     });
+
     if (!enrollment) throw new NotFoundException('Enrollment not found');
 
     enrollment.commission.availableSpots += 1;
@@ -52,5 +57,67 @@ export class EnrollmentsService {
     return { message: 'Successfully withdrawn' };
   }
 
+  // ✅ Ver todos los cursos/comisiones de un usuario
+  async findByUser(userId: number) {
+    if (!userId || isNaN(userId)) {
+      throw new BadRequestException('Invalid userId');
+    }
 
+    const enrollments = await this.enrollmentRepo.find({
+      where: { user: { id: userId } },
+      relations: ['course', 'commission'],
+    });
+
+    if (!enrollments.length) {
+      throw new NotFoundException('No enrollments found for this user');
+    }
+
+    return enrollments.map((enr) => ({
+      enrollmentId: enr.id,
+      course: enr.course
+        ? {
+            id: enr.course.id,
+            name: enr.course.name,
+            code: enr.course.code,
+          }
+        : { id: null, name: 'Sin curso asignado' },
+      commission: enr.commission
+        ? {
+            id: enr.commission.id,
+            professorName: enr.commission.professorName,
+            shift: enr.commission.shift,
+            days: enr.commission.days,
+            startTime: enr.commission.startTime,
+            endTime: enr.commission.endTime,
+          }
+        : { id: null, professorName: 'Sin comisión asignada' },
+    }));
+  }
+
+  // ✅ Ver detalle de una inscripción específica
+  async findEnrollmentDetail(userId: number, commissionId: number) {
+    const enrollment = await this.enrollmentRepo.findOne({
+      where: { user: { id: userId }, commission: { id: commissionId } },
+      relations: ['course', 'commission'],
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException('Enrollment not found');
+    }
+
+    return {
+      id: enrollment.id,
+      course: enrollment.course
+        ? { id: enrollment.course.id, name: enrollment.course.name }
+        : null,
+      commission: enrollment.commission
+        ? {
+            id: enrollment.commission.id,
+            professorName: enrollment.commission.professorName,
+            days: enrollment.commission.days,
+            shift: enrollment.commission.shift,
+          }
+        : null,
+    };
+  }
 }

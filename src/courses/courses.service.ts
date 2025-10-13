@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
-import { CreateCourseDto } from './dto/create-course.dto';
 
 @Injectable()
 export class CoursesService {
@@ -11,18 +10,31 @@ export class CoursesService {
     private courseRepo: Repository<Course>,
   ) {}
 
-  findAll() {
+  async findAll() {
     return this.courseRepo.find({ relations: ['commissions'] });
   }
 
   async findOne(id: number) {
-    const course = await this.courseRepo.findOne({ where: { id }, relations: ['commissions'] });
-    if (!course) throw new NotFoundException('Course not found');
+    // 🚨 Bloquea IDs inválidos antes de llegar al query
+    if (!id || isNaN(id)) {
+      console.warn('⚠️ findOne() llamado con ID inválido:', id);
+      throw new BadRequestException('Invalid course ID');
+    }
+
+    const course = await this.courseRepo.findOne({
+      where: { id },
+      relations: ['commissions'],
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course with ID ${id} not found`);
+    }
+
     return course;
   }
 
-  create(dto: CreateCourseDto) {
-    const course = this.courseRepo.create(dto);
+  async create(courseData: Partial<Course>) {
+    const course = this.courseRepo.create(courseData);
     return this.courseRepo.save(course);
   }
 }
