@@ -4,11 +4,14 @@ import {
   IsNotEmpty,
   IsISO8601,
   IsOptional,
-  IsInt,
 } from 'class-validator';
 import { EventType } from '../entities/calendar-event.entity';
 
-export class CreateCalendarEventDto {
+export class CalendarEventDto {
+  @IsString()
+  @IsNotEmpty()
+  eventId: string;
+
   @IsString()
   @IsNotEmpty()
   title: string;
@@ -29,7 +32,6 @@ export class CreateCalendarEventDto {
   @IsISO8601()
   date: string;
 
-  @IsOptional()
-  @IsInt()
-  userId?: number; // ID del usuario que crea el evento
+  @IsString()
+  userId?: string;
 }

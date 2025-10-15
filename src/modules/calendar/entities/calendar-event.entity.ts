@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { User } from '../../user/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 export enum EventType {
   Cafeteria = 'cafeteria',
@@ -12,6 +11,9 @@ export enum EventType {
 export class CalendarEvent {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column()
+  eventId: string;
 
   @Column()
   title: string;
@@ -28,8 +30,8 @@ export class CalendarEvent {
   @Column({ type: 'enum', enum: EventType })
   eventType: EventType;
 
-  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
-  user?: User;
+  @Column()
+  userId?: string;
 
   @Column({ type: 'date' })
   date: string;
