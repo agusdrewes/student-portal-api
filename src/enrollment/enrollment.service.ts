@@ -9,6 +9,7 @@ import { Enrollment } from './entities/enrollment.entity';
 import { User } from '../user/entities/user.entity';
 import { Course } from '../courses/entities/course.entity';
 import { Commission } from '../commission/entities/commission.entity';
+import { AcademicHistory } from '../academic-history/entities/academic-history.entity';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 
 @Injectable()
@@ -22,8 +23,11 @@ export class EnrollmentsService {
     private courseRepo: Repository<Course>,
     @InjectRepository(Commission)
     private commissionRepo: Repository<Commission>,
+    @InjectRepository(AcademicHistory)
+    private historyRepo: Repository<AcademicHistory>, // ✅ agregado
   ) {}
 
+  // ✅ Inscribir alumno y crear historial académico automático
   async enroll(dto: CreateEnrollmentDto) {
     const user = await this.userRepo.findOne({ where: { id: dto.userId } });
     const course = await this.courseRepo.findOne({ where: { id: dto.courseId } });
@@ -37,24 +41,64 @@ export class EnrollmentsService {
       throw new BadRequestException('No available spots');
     }
 
+    // Verificar si ya está inscripto
+    const existingEnrollment = await this.enrollmentRepo.findOne({
+      where: { user: { id: dto.userId }, course: { id: dto.courseId } },
+    });
+    if (existingEnrollment) {
+      throw new BadRequestException('User already enrolled in this course');
+    }
+
+    // Crear inscripción
     const enrollment = this.enrollmentRepo.create({ user, course, commission });
     commission.availableSpots -= 1;
     await this.commissionRepo.save(commission);
-    return this.enrollmentRepo.save(enrollment);
+    await this.enrollmentRepo.save(enrollment);
+
+    // 🧠 Crear historial académico inicial
+    const currentYear = new Date().getFullYear().toString();
+    const currentSemester = new Date().getMonth() < 6 ? '1C' : '2C';
+
+    const history = this.historyRepo.create({
+      user,
+      course,
+      commission,
+      semester: currentSemester,
+      year: currentYear,
+      status: 'in_progress',
+      finalNote: null,
+    });
+
+    await this.historyRepo.save(history);
+
+    return {
+      message: 'Enrollment successful and academic history record created',
+      enrollment,
+      academicHistory: history,
+    };
   }
 
+  // ✅ Retirarse de una comisión (y borrar el registro de historial si sigue en progreso)
   async withdraw(userId: number, commissionId: number) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },
-      relations: ['commission'],
+      relations: ['commission', 'course'],
     });
 
     if (!enrollment) throw new NotFoundException('Enrollment not found');
 
     enrollment.commission.availableSpots += 1;
     await this.commissionRepo.save(enrollment.commission);
+
+    // Borrar historial académico si todavía está "in_progress"
+    await this.historyRepo.delete({
+      user: { id: userId },
+      course: { id: enrollment.course.id },
+      status: 'in_progress',
+    });
+
     await this.enrollmentRepo.remove(enrollment);
-    return { message: 'Successfully withdrawn' };
+    return { message: 'Successfully withdrawn and academic history removed' };
   }
 
   // ✅ Ver todos los cursos/comisiones de un usuario
