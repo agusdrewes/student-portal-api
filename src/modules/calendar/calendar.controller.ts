@@ -1,6 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { CalendarService } from './calendar.service';
-import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
+import { CalendarEventDto } from './dto/create-calendar-event.dto';
 
 @Controller('calendar')
 export class CalendarController {
@@ -21,12 +30,12 @@ export class CalendarController {
   }
 
   @Post()
-  create(@Body() body: CreateCalendarEventDto) {
+  create(@Body() body: CalendarEventDto) {
     return this.service.create(body);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Partial<CreateCalendarEventDto>) {
+  update(@Param('id') id: string, @Body() body: Partial<CalendarEventDto>) {
     return this.service.update(Number(id), body);
   }
 
