@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from 'typeorm';
 import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 import { AcademicHistory } from '../../academic-history/entities/academic-history.entity';
+import { Career } from '../../career/entities/career.entity';
 
 
 @Entity()
@@ -25,4 +26,9 @@ export class User {
 
   @OneToMany(() => AcademicHistory, (h) => h.user)
   academicHistory: AcademicHistory[];
+
+
+  @ManyToOne(() => Career, (career) => career.users, { nullable: true })
+  career: Career;
+
 }
