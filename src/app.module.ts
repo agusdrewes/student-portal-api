@@ -10,6 +10,7 @@ import { AcademicHistoryModule } from './academic-history/academic-history.modul
 import { AccountModule } from './account/account.module';
 import { CommissionModule } from './commission/commission.module';
 import { CareerModule } from './career/career.module';
+import { PurchasesModule } from './purchases/purchases.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -21,7 +22,8 @@ import { CareerModule } from './career/career.module';
     CalendarModule,
     AcademicHistoryModule, 
     AccountModule,
-    CareerModule
+    CareerModule,
+    PurchasesModule
   ],
 })
 export class AppModule {}
