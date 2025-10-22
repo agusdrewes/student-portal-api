@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, ManyToMany } from 'typeorm';
 import { Commission } from '../../commission/entities/commission.entity';
 import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 import { AcademicHistory } from '../../academic-history/entities/academic-history.entity';
@@ -32,8 +32,8 @@ export class Course {
   @OneToMany(() => AcademicHistory, (h) => h.course)
   academicHistory: AcademicHistory[];
 
+  @ManyToMany(() => Career, (career) => career.courses)
+  careers: Career[];
 
-  @ManyToOne(() => Career, (career) => career.courses, { eager: false, onDelete: 'CASCADE' })
-  career: Career;
 
 }

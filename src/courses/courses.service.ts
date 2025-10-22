@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { User } from '../user/entities/user.entity';
 
@@ -23,7 +23,7 @@ export class CoursesService {
   // ============================================================
   async findAll() {
     const courses = await this.courseRepo.find({
-      relations: ['commissions', 'career'],
+      relations: ['commissions', 'careers'],
     });
 
     if (!courses.length) {
@@ -35,13 +35,13 @@ export class CoursesService {
       code: c.code,
       name: c.name,
       description: c.description,
-      career: c.career ? c.career.name : null,
+      careers: c.careers?.map((career) => career.name) || [],
       totalCommissions: c.commissions?.length || 0,
     }));
   }
 
   // ============================================================
-  // ✅ 2️⃣ Obtener un curso por ID
+  // ✅ 2️⃣ Obtener un curso por ID (con correlativas y carreras)
   // ============================================================
   async findOne(id: number) {
     if (!id || isNaN(id)) {
@@ -51,17 +51,16 @@ export class CoursesService {
 
     const course = await this.courseRepo.findOne({
       where: { id },
-      relations: ['commissions', 'career'],
+      relations: ['commissions', 'careers'],
     });
 
     if (!course) {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
 
-    // Resolver correlativas
     const correlatives =
       course.correlates?.length > 0
-        ? await this.courseRepo.findByIds(course.correlates)
+        ? await this.courseRepo.find({ where: { id: In(course.correlates) } })
         : [];
 
     return {
@@ -69,7 +68,10 @@ export class CoursesService {
       code: course.code,
       name: course.name,
       description: course.description,
-      career: course.career ? course.career.name : null,
+      careers: course.careers?.map((career) => ({
+        id: career.id,
+        name: career.name,
+      })),
       correlatives: correlatives.map((c) => ({
         id: c.id,
         name: c.name,
@@ -79,7 +81,7 @@ export class CoursesService {
   }
 
   // ============================================================
-  // ✅ 3️⃣ Obtener todos los cursos de la carrera del usuario autenticado
+  // ✅ 3️⃣ Obtener los cursos de las carreras del usuario autenticado
   // ============================================================
   async findCoursesForUser(userId: number) {
     const user = await this.userRepo.findOne({
@@ -91,10 +93,13 @@ export class CoursesService {
       throw new NotFoundException('User or career not found');
     }
 
-    const courses = await this.courseRepo.find({
-      where: { career: { id: user.career.id } },
-      relations: ['career'],
-    });
+    // 💡 Buscar todos los cursos donde la carrera del usuario esté asociada
+    const courses = await this.courseRepo
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.careers', 'career')
+      .where('career.id = :careerId', { careerId: user.career.id })
+      .leftJoinAndSelect('course.commissions', 'commission')
+      .getMany();
 
     if (!courses.length) {
       throw new NotFoundException('No courses found for this career');
@@ -104,14 +109,14 @@ export class CoursesService {
       courses.map(async (c) => {
         const correlatives =
           c.correlates?.length > 0
-            ? await this.courseRepo.findByIds(c.correlates)
+            ? await this.courseRepo.find({ where: { id: In(c.correlates) } })
             : [];
         return {
           id: c.id,
           code: c.code,
           name: c.name,
           description: c.description,
-          career: user.career.name,
+          careers: c.careers?.map((car) => car.name) || [],
           correlatives: correlatives.map((corr) => ({
             id: corr.id,
             name: corr.name,

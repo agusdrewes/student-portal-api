@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Career } from './entities/career.entity';
@@ -34,8 +34,14 @@ export class CareerService {
 
     if (!career || !course) throw new NotFoundException('Career or Course not found');
 
-    course.career = career;
-    await this.courseRepo.save(course);
+    // 🚫 Evitar duplicados
+    const alreadyExists = career.courses.some((c) => c.id === course.id);
+    if (alreadyExists) {
+      throw new BadRequestException('Course already assigned to this career');
+    }
+
+    career.courses.push(course);
+    await this.careerRepo.save(career);
 
     return { message: `Course ${course.name} added to ${career.name}` };
   }
