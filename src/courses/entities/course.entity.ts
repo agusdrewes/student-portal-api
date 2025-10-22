@@ -1,7 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, ManyToMany } from 'typeorm';
 import { Commission } from '../../commission/entities/commission.entity';
 import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 import { AcademicHistory } from '../../academic-history/entities/academic-history.entity';
+import { Career } from '../../career/entities/career.entity';
+
 
 @Entity('courses')
 export class Course {
@@ -29,6 +31,9 @@ export class Course {
 
   @OneToMany(() => AcademicHistory, (h) => h.course)
   academicHistory: AcademicHistory[];
+
+  @ManyToMany(() => Career, (career) => career.courses)
+  careers: Career[];
 
 
 }
