@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from 'ty
 import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 import { AcademicHistory } from '../../academic-history/entities/academic-history.entity';
 import { Career } from '../../career/entities/career.entity';
+import { Purchase } from 'src/purchases/entities/purchase.entity';
 
 
 @Entity()
@@ -30,5 +31,8 @@ export class User {
 
   @ManyToOne(() => Career, (career) => career.users, { nullable: true })
   career: Career;
+
+  @OneToMany(() => Purchase, (purchase) => purchase.user, { cascade: true })
+  purchases: Purchase[];
 
 }
