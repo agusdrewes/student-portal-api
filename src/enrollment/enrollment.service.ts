@@ -26,7 +26,7 @@ export class EnrollmentsService {
     private commissionRepo: Repository<Commission>,
     @InjectRepository(AcademicHistory)
     private historyRepo: Repository<AcademicHistory>, // ✅ agregado
-  ) {}
+  ) { }
 
   async enroll(dto: CreateEnrollmentDto) {
     const { userId, courseId, commissionId } = dto;
@@ -106,10 +106,29 @@ export class EnrollmentsService {
 
     return {
       message: 'Enrollment successful and academic history record created',
-      enrollment,
-      academicHistory: history,
-    };
+      enrollment: {
+        id: enrollment.id,
+        course: {
+          id: course.id,
+          code: course.code,
+          name: course.name,
+        },
+        commission: {
+          id: commission.id,
+          days: commission.days,
+          shift: commission.shift,
+          professorName: commission.professorName,
+        },
+      },
+      academicHistory: {
+        semester: history.semester,
+        year: history.year,
+        finalNote: history.finalNote,
+        status: history.status,
+      },
+    }
   }
+
 
   // ✅ Retirarse de una comisión (y borrar el registro de historial si sigue en progreso)
   async withdraw(userId: number, commissionId: number) {
@@ -153,20 +172,20 @@ export class EnrollmentsService {
       enrollmentId: enr.id,
       course: enr.course
         ? {
-            id: enr.course.id,
-            name: enr.course.name,
-            code: enr.course.code,
-          }
+          id: enr.course.id,
+          name: enr.course.name,
+          code: enr.course.code,
+        }
         : { id: null, name: 'Sin curso asignado' },
       commission: enr.commission
         ? {
-            id: enr.commission.id,
-            professorName: enr.commission.professorName,
-            shift: enr.commission.shift,
-            days: enr.commission.days,
-            startTime: enr.commission.startTime,
-            endTime: enr.commission.endTime,
-          }
+          id: enr.commission.id,
+          professorName: enr.commission.professorName,
+          shift: enr.commission.shift,
+          days: enr.commission.days,
+          startTime: enr.commission.startTime,
+          endTime: enr.commission.endTime,
+        }
         : { id: null, professorName: 'Sin comisión asignada' },
     }));
   }
@@ -189,11 +208,11 @@ export class EnrollmentsService {
         : null,
       commission: enrollment.commission
         ? {
-            id: enrollment.commission.id,
-            professorName: enrollment.commission.professorName,
-            days: enrollment.commission.days,
-            shift: enrollment.commission.shift,
-          }
+          id: enrollment.commission.id,
+          professorName: enrollment.commission.professorName,
+          days: enrollment.commission.days,
+          shift: enrollment.commission.shift,
+        }
         : null,
     };
   }
