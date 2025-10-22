@@ -2,9 +2,10 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Enrollment } from './entities/enrollment.entity';
 import { User } from '../user/entities/user.entity';
 import { Course } from '../courses/entities/course.entity';
@@ -27,35 +28,68 @@ export class EnrollmentsService {
     private historyRepo: Repository<AcademicHistory>, // ✅ agregado
   ) {}
 
-  // ✅ Inscribir alumno y crear historial académico automático
   async enroll(dto: CreateEnrollmentDto) {
-    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
-    const course = await this.courseRepo.findOne({ where: { id: dto.courseId } });
-    const commission = await this.commissionRepo.findOne({ where: { id: dto.commissionId } });
+    const { userId, courseId, commissionId } = dto;
+
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    const course = await this.courseRepo.findOne({ where: { id: courseId } });
+    const commission = await this.commissionRepo.findOne({ where: { id: commissionId } });
 
     if (!user || !course || !commission) {
       throw new NotFoundException('Invalid enrollment data');
     }
 
+    // 🧩 1️⃣ Validar correlativas
+    if (course.correlates && course.correlates.length > 0) {
+      // Buscar el historial académico del usuario para esas correlativas
+      const histories = await this.historyRepo.find({
+        where: {
+          user: { id: userId },
+          course: { id: In(course.correlates) },
+        },
+        relations: ['course'],
+      });
+
+      // Obtener IDs de correlativas aprobadas
+      const approvedIds = histories
+        .filter((h) => h.status === 'passed')
+        .map((h) => h.course.id);
+
+      // Ver cuáles faltan aprobar
+      const missing = course.correlates.filter((id) => !approvedIds.includes(id));
+
+      if (missing.length > 0) {
+        const missingCourses = await this.courseRepo.find({
+          where: { id: In(missing) },
+        });
+
+        const missingNames = missingCourses.map((c) => c.name).join(', ');
+        throw new ForbiddenException(
+          `Cannot enroll in ${course.name}. Missing prerequisites: ${missingNames}`,
+        );
+      }
+    }
+
+    // 🧩 2️⃣ Validar cupos
     if (commission.availableSpots <= 0) {
       throw new BadRequestException('No available spots');
     }
 
-    // Verificar si ya está inscripto
+    // 🧩 3️⃣ Evitar doble inscripción
     const existingEnrollment = await this.enrollmentRepo.findOne({
-      where: { user: { id: dto.userId }, course: { id: dto.courseId } },
+      where: { user: { id: userId }, course: { id: courseId } },
     });
     if (existingEnrollment) {
       throw new BadRequestException('User already enrolled in this course');
     }
 
-    // Crear inscripción
+    // 🧩 4️⃣ Crear inscripción
     const enrollment = this.enrollmentRepo.create({ user, course, commission });
     commission.availableSpots -= 1;
     await this.commissionRepo.save(commission);
     await this.enrollmentRepo.save(enrollment);
 
-    // 🧠 Crear historial académico inicial
+    // 🧩 5️⃣ Crear historial académico inicial
     const currentYear = new Date().getFullYear().toString();
     const currentSemester = new Date().getMonth() < 6 ? '1C' : '2C';
 
@@ -68,7 +102,6 @@ export class EnrollmentsService {
       status: 'in_progress',
       finalNote: null,
     });
-
     await this.historyRepo.save(history);
 
     return {
