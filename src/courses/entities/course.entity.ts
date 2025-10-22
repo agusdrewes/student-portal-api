@@ -33,7 +33,7 @@ export class Course {
   academicHistory: AcademicHistory[];
 
 
-  @ManyToOne(() => Career, (career) => career.courses)
+  @ManyToOne(() => Career, (career) => career.courses, { eager: false, onDelete: 'CASCADE' })
   career: Career;
 
 }
