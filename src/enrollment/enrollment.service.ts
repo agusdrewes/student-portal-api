@@ -185,6 +185,7 @@ export class EnrollmentsService {
           days: enr.commission.days,
           startTime: enr.commission.startTime,
           endTime: enr.commission.endTime,
+          classroom: enr.commission.classRoom
         }
         : { id: null, professorName: 'Sin comisión asignada' },
     }));
