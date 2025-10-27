@@ -12,6 +12,7 @@ import { Course } from '../courses/entities/course.entity';
 import { Commission } from '../commission/entities/commission.entity';
 import { AcademicHistory } from '../academic-history/entities/academic-history.entity';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
+import { start } from 'repl';
 
 @Injectable()
 export class EnrollmentsService {
@@ -213,6 +214,9 @@ export class EnrollmentsService {
           professorName: enrollment.commission.professorName,
           days: enrollment.commission.days,
           shift: enrollment.commission.shift,
+          startTime: enrollment.commission.startTime,
+          endTime: enrollment.commission.endTime,
+          classroom: enrollment.commission.classRoom
         }
         : null,
     };
