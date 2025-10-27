@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'ty
 import { Course } from '../../courses/entities/course.entity';
 import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 import { AcademicHistory } from '../../academic-history/entities/academic-history.entity';
+import { Attendance } from '../../attendance/entities/attendance.entity';
 
 @Entity('commissions')
 export class Commission {
@@ -46,4 +47,8 @@ export class Commission {
 
   @OneToMany(() => AcademicHistory, (h) => h.commission)
   academicHistory: AcademicHistory[];
+
+  @OneToMany(() => Attendance, (attendance) => attendance.commission)
+  attendances: Attendance[];
+
 }

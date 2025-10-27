@@ -4,6 +4,7 @@ import { AcademicHistory } from '../../academic-history/entities/academic-histor
 import { Career } from '../../career/entities/career.entity';
 import { Purchase } from 'src/purchases/entities/purchase.entity';
 import { Notification } from '../../notifications/entities/notifications.entity';
+import { Attendance } from '../../attendance/entities/attendance.entity';
 
 
 @Entity()
@@ -38,6 +39,10 @@ export class User {
 
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[];
+
+  @OneToMany(() => Attendance, (attendance) => attendance.user)
+  attendances: Attendance[];
+
 
 
 }
