@@ -3,6 +3,7 @@ import { Course } from '../../courses/entities/course.entity';
 import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 import { AcademicHistory } from '../../academic-history/entities/academic-history.entity';
 import { Attendance } from '../../attendance/entities/attendance.entity';
+import { Grade } from 'src/grades/entities/grade.entity';
 
 @Entity('commissions')
 export class Commission {
@@ -50,5 +51,8 @@ export class Commission {
 
   @OneToMany(() => Attendance, (attendance) => attendance.commission)
   attendances: Attendance[];
+
+  @OneToMany(() => Grade, (grade) => grade.commission)
+  grades: Grade[];
 
 }

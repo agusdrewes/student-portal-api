@@ -5,6 +5,7 @@ import { Career } from '../../career/entities/career.entity';
 import { Purchase } from 'src/purchases/entities/purchase.entity';
 import { Notification } from '../../notifications/entities/notifications.entity';
 import { Attendance } from '../../attendance/entities/attendance.entity';
+import { Grade } from 'src/grades/entities/grade.entity';
 
 
 @Entity()
@@ -43,6 +44,7 @@ export class User {
   @OneToMany(() => Attendance, (attendance) => attendance.user)
   attendances: Attendance[];
 
-
+  @OneToMany(() => Grade, (grade) => grade.user)
+  grades: Grade[];
 
 }

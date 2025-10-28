@@ -7,9 +7,10 @@ import { User } from '../user/entities/user.entity';
 import { Course } from '../courses/entities/course.entity';
 import { Commission } from '../commission/entities/commission.entity';
 import { AcademicHistory } from '../academic-history/entities/academic-history.entity';
+import { GradesModule } from 'src/grades/grades.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Enrollment, User, Course, Commission, AcademicHistory])],
+  imports: [TypeOrmModule.forFeature([Enrollment, User, Course, Commission, AcademicHistory]), GradesModule],
   controllers: [EnrollmentsController],
   providers: [EnrollmentsService],
 })
