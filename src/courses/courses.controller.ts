@@ -26,6 +26,15 @@ export class CoursesController {
   }
 
   // ============================================================
+// ✅ NUEVO ENDPOINT: /courses/available?userId=1
+// ============================================================
+@Get('available')
+findAvailableCourses(@Query('userId') userId: number) {
+  if (!userId) userId = 1;
+  return this.coursesService.findAvailableCoursesForUser(userId);
+}
+
+  // ============================================================
   // ✅ 3️⃣ Obtener un curso específico
   // Ejemplo: GET /courses/1
   // ============================================================
@@ -41,4 +50,6 @@ export class CoursesController {
   create(@Body() dto: CreateCourseDto) {
     return this.coursesService.create(dto);
   }
+
+  
 }

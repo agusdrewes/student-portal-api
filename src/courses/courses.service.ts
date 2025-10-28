@@ -45,9 +45,10 @@ export class CoursesService {
   // ============================================================
   async findOne(id: number) {
     if (!id || isNaN(id)) {
-      console.warn('⚠️ findOne() llamado con ID inválido:', id);
-      throw new BadRequestException('Invalid course ID');
+      console.warn('⚠️ findOne() recibió un ID inválido (NaN o null):', id);
+      return null; // ✅ devolvemos null en lugar de lanzar error
     }
+    
 
     const course = await this.courseRepo.findOne({
       where: { id },
@@ -58,10 +59,15 @@ export class CoursesService {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
 
-    const correlatives =
-      course.correlates?.length > 0
-        ? await this.courseRepo.find({ where: { id: In(course.correlates) } })
-        : [];
+    // ✅ Limpieza de correlativas con IDs válidos
+const validCorrelates = (course.correlates || []).filter(
+  (id) => typeof id === 'number' && !isNaN(id) && id > 0
+);
+
+const correlatives =
+  validCorrelates.length > 0
+    ? await this.courseRepo.find({ where: { id: In(validCorrelates) } })
+    : [];
 
     return {
       id: course.id,
@@ -107,10 +113,15 @@ export class CoursesService {
 
     return Promise.all(
       courses.map(async (c) => {
+        const validCorrelates = (c.correlates || []).filter(
+          (id) => typeof id === 'number' && !isNaN(id) && id > 0
+        );
+        
         const correlatives =
-          c.correlates?.length > 0
-            ? await this.courseRepo.find({ where: { id: In(c.correlates) } })
+          validCorrelates.length > 0
+            ? await this.courseRepo.find({ where: { id: In(validCorrelates) } })
             : [];
+        
         return {
           id: c.id,
           code: c.code,
@@ -137,4 +148,84 @@ export class CoursesService {
     const course = this.courseRepo.create(courseData);
     return this.courseRepo.save(course);
   }
+
+  // ============================================================
+// ✅ NUEVO: Filtrar cursos disponibles para inscripción
+// ============================================================
+async findAvailableCoursesForUser(userId: number) {
+  // 1️⃣ Buscar usuario con su carrera
+  const user = await this.userRepo.findOne({
+    where: { id: userId },
+    relations: ['career'],
+  });
+
+  if (!user || !user.career) {
+    throw new NotFoundException('User or career not found');
+  }
+
+  // 2️⃣ Traer todos los cursos de su carrera
+  // ✅ Usamos QueryBuilder para evitar el bug de TypeORM
+const allCourses = await this.courseRepo
+.createQueryBuilder('course')
+.leftJoinAndSelect('course.careers', 'career')
+.where('career.id = :careerId', { careerId: user.career.id })
+.getMany();
+
+
+  // 3️⃣ Traer historial académico aprobado
+  const approvedHistory = await this.courseRepo.manager
+    .getRepository('academic_history')
+    .createQueryBuilder('h')
+    .leftJoinAndSelect('h.course', 'course')
+    .where('h.userId = :userId', { userId })
+    .andWhere('h.status = :status', { status: 'done' })
+    .getMany();
+    // 🧠 DEBUG: ver qué está devolviendo cada query
+    console.log('👤 Usuario:', user.id, '-', user.career?.name);
+
+    console.log('📚 Cursos totales de la carrera:', allCourses.length);
+    console.log(allCourses.map(c => ({ id: c.id, name: c.name, correlates: c.correlates })));
+  
+    console.log('✅ Cursos aprobados:', approvedHistory.length);
+    console.log(approvedHistory.map(h => ({ id: h.course.id, name: h.course.name })));
+  
+
+  const approvedCourseIds = approvedHistory.map(h => h.course.id);
+
+  // 4️⃣ Filtrar cursos: no aprobados y sin correlativas pendientes
+  // 4️⃣ Filtrar cursos: no aprobados y sin correlativas pendientes
+const availableCourses = allCourses.filter(course => {
+  const alreadyApproved = approvedCourseIds.includes(course.id);
+
+  // 🔹 Evitamos IDs nulos o no numéricos
+  // 🔧 Convertimos todo a número y filtramos NaN o negativos
+const validCorrelates = (course.correlates || [])
+.map(id => Number(id))
+.filter(id => !isNaN(id) && id > 0);
+
+  
+
+  const pendingCorrelatives = validCorrelates.some(
+    corrId => !approvedCourseIds.includes(corrId)
+  );
+  for (const c of allCourses) {
+    if (c.correlates?.some(id => isNaN(Number(id)))) {
+      console.warn(`🚨 Curso con correlativas inválidas: ${c.name}`, c.correlates);
+    }
+  }
+  
+
+  return !alreadyApproved && !pendingCorrelatives;
+});
+
+  // 5️⃣ Retornar lista limpia
+  return availableCourses.map(c => ({
+    id: c.id,
+    code: c.code,
+    name: c.name,
+    description: c.description,
+    correlates: c.correlates,
+  }));
+}
+
 }
