@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body } from '@nestjs/common';
 import { GradesService } from './grades.service';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 
@@ -6,13 +6,19 @@ import { UpdateGradeDto } from './dto/update-grade.dto';
 export class GradesController {
   constructor(private readonly gradesService: GradesService) {}
 
-  // Obtener todas las calificaciones de un alumno
   @Get('user/:userId')
   findByUser(@Param('userId') userId: number) {
     return this.gradesService.findByUser(userId);
   }
 
-  // Actualizar notas de un alumno en una comisión
+  @Get('user/:userId/commission/:commissionId')
+  findByUserAndCommission(
+    @Param('userId') userId: number,
+    @Param('commissionId') commissionId: number,
+  ) {
+    return this.gradesService.findByUserAndCommission(userId, commissionId);
+  }
+
   @Patch('user/:userId/commission/:commissionId')
   updateGrade(
     @Param('userId') userId: number,
