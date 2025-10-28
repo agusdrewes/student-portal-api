@@ -161,42 +161,57 @@ export class EnrollmentsService {
   }
 
   // ✅ Ver todos los cursos/comisiones de un usuario
-  async findByUser(userId: number) {
-    if (!userId || isNaN(userId)) {
-      throw new BadRequestException('Invalid userId');
-    }
+async findByUser(userId: number) {
+  if (!userId || isNaN(userId)) {
+    throw new BadRequestException('Invalid userId');
+  }
 
-    const enrollments = await this.enrollmentRepo.find({
-      where: { user: { id: userId } },
-      relations: ['course', 'commission'],
-    });
+  const enrollments = await this.enrollmentRepo.find({
+    where: { user: { id: userId } },
+    relations: ['course', 'commission'],
+  });
 
-    if (!enrollments.length) {
-      throw new NotFoundException('No enrollments found for this user');
-    }
+  if (!enrollments.length) {
+    throw new NotFoundException('No enrollments found for this user');
+  }
 
-    return enrollments.map((enr) => ({
+  // 🔹 Traer historial académico del usuario para ver estado por curso
+  const histories = await this.historyRepo.find({
+    where: { user: { id: userId } },
+    relations: ['course'],
+  });
+
+  return enrollments.map((enr) => {
+    const courseStatus = histories.find(
+      (h) => h.course?.id === enr.course?.id
+    )?.status;
+
+    return {
       enrollmentId: enr.id,
       course: enr.course
         ? {
-          id: enr.course.id,
-          name: enr.course.name,
-          code: enr.course.code,
-        }
+            id: enr.course.id,
+            name: enr.course.name,
+            code: enr.course.code,
+          }
         : { id: null, name: 'Sin curso asignado' },
       commission: enr.commission
         ? {
-          id: enr.commission.id,
-          professorName: enr.commission.professorName,
-          shift: enr.commission.shift,
-          days: enr.commission.days,
-          startTime: enr.commission.startTime,
-          endTime: enr.commission.endTime,
-          classroom: enr.commission.classRoom
-        }
+            id: enr.commission.id,
+            professorName: enr.commission.professorName,
+            shift: enr.commission.shift,
+            days: enr.commission.days,
+            startTime: enr.commission.startTime,
+            endTime: enr.commission.endTime,
+            classroom: enr.commission.classRoom,
+          }
         : { id: null, professorName: 'Sin comisión asignada' },
-    }));
-  }
+      // ✅ Nuevo: incluir estado académico
+      status: courseStatus || 'unknown',
+    };
+  });
+}
+
 
   // ✅ Ver detalle de una inscripción específica
   async findEnrollmentDetail(userId: number, commissionId: number) {
