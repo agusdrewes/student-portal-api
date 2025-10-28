@@ -13,6 +13,8 @@ import { Commission } from '../commission/entities/commission.entity';
 import { AcademicHistory } from '../academic-history/entities/academic-history.entity';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { start } from 'repl';
+import { GradesService } from '../grades/grades.service';
+
 
 @Injectable()
 export class EnrollmentsService {
@@ -26,7 +28,9 @@ export class EnrollmentsService {
     @InjectRepository(Commission)
     private commissionRepo: Repository<Commission>,
     @InjectRepository(AcademicHistory)
-    private historyRepo: Repository<AcademicHistory>, // ✅ agregado
+    private historyRepo: Repository<AcademicHistory>, 
+    private readonly gradesService: GradesService, // ✅
+
   ) { }
 
   async enroll(dto: CreateEnrollmentDto) {
@@ -104,6 +108,8 @@ export class EnrollmentsService {
       finalNote: null,
     });
     await this.historyRepo.save(history);
+    await this.gradesService.createInitial(user.id, commission.id);
+
 
     return {
       message: 'Enrollment successful and academic history record created',
