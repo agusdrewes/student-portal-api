@@ -40,6 +40,14 @@ export class Commission {
   @Column('decimal', { precision: 10, scale: 2 })
   price: string;
 
+  @Column({ type: 'date', default: () => 'CURRENT_DATE' })
+startDate: string;
+
+@Column({ type: 'date', default: () => 'CURRENT_DATE' })
+endDate: string;
+
+
+
   @ManyToOne(() => Course, (course) => course.commissions, { onDelete: 'CASCADE' })
   course: Course;
 

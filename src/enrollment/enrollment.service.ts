@@ -82,10 +82,10 @@ export class EnrollmentsService {
 
     // 🧩 3️⃣ Evitar doble inscripción
     const existingEnrollment = await this.enrollmentRepo.findOne({
-      where: { user: { id: userId }, course: { id: courseId } },
+      where: { user: { id: userId }, commission: { id: commissionId } },
     });
     if (existingEnrollment) {
-      throw new BadRequestException('User already enrolled in this course');
+      throw new BadRequestException('User already enrolled in this commission');
     }
 
     // 🧩 4️⃣ Crear inscripción
@@ -175,7 +175,6 @@ async findByUser(userId: number) {
     throw new NotFoundException('No enrollments found for this user');
   }
 
-  // 🔹 Traer historial académico del usuario para ver estado por curso
   const histories = await this.historyRepo.find({
     where: { user: { id: userId } },
     relations: ['course'],
@@ -213,7 +212,6 @@ async findByUser(userId: number) {
 }
 
 
-  // ✅ Ver detalle de una inscripción específica
   async findEnrollmentDetail(userId: number, commissionId: number) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },

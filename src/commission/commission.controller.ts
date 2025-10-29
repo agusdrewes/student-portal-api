@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query } from '@nestjs/common';
 import { CommissionService } from './commission.service';
 import { CreateCommissionDto } from './dto/create-commission.dto';
 
@@ -15,4 +15,13 @@ export class CommissionController {
   create(@Param('courseId') courseId: number, @Body() dto: CreateCommissionDto) {
     return this.commissionService.create(courseId, dto);
   }
+
+  @Get()
+  findByCourseWithStatus(
+    @Param('courseId') courseId: number,
+    @Query('status') status?: 'future' | 'in_progress' | 'past'
+  ) {
+    return this.commissionService.findByCourseWithStatus(courseId, status);
+  }
+
 }

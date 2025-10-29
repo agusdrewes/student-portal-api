@@ -163,69 +163,92 @@ async findAvailableCoursesForUser(userId: number) {
     throw new NotFoundException('User or career not found');
   }
 
-  // 2️⃣ Traer todos los cursos de su carrera
-  // ✅ Usamos QueryBuilder para evitar el bug de TypeORM
-const allCourses = await this.courseRepo
-.createQueryBuilder('course')
-.leftJoinAndSelect('course.careers', 'career')
-.where('career.id = :careerId', { careerId: user.career.id })
-.getMany();
+  // 2️⃣ Traer todos los cursos de su carrera con comisiones
+  const allCourses = await this.courseRepo
+    .createQueryBuilder('course')
+    .leftJoinAndSelect('course.careers', 'career')
+    .leftJoinAndSelect('course.commissions', 'commission')
+    .where('career.id = :careerId', { careerId: user.career.id })
+    .getMany();
 
-
-  // 3️⃣ Traer historial académico aprobado
-  const approvedHistory = await this.courseRepo.manager
+  // 3️⃣ Traer historial académico del usuario
+  const history = await this.courseRepo.manager
     .getRepository('academic_history')
     .createQueryBuilder('h')
     .leftJoinAndSelect('h.course', 'course')
     .where('h.userId = :userId', { userId })
-    .andWhere('h.status = :status', { status: 'done' })
     .getMany();
-    // 🧠 DEBUG: ver qué está devolviendo cada query
-    console.log('👤 Usuario:', user.id, '-', user.career?.name);
 
-    console.log('📚 Cursos totales de la carrera:', allCourses.length);
-    console.log(allCourses.map(c => ({ id: c.id, name: c.name, correlates: c.correlates })));
-  
-    console.log('✅ Cursos aprobados:', approvedHistory.length);
-    console.log(approvedHistory.map(h => ({ id: h.course.id, name: h.course.name })));
-  
+  // ✅ Clasificamos los cursos según su estado
+  const approvedIds = history
+    .filter((h) => h.status === 'passed')
+    .map((h) => h.course.id);
 
-  const approvedCourseIds = approvedHistory.map(h => h.course.id);
+  const inProgressIds = history
+    .filter((h) => h.status === 'in_progress')
+    .map((h) => h.course.id);
 
-  // 4️⃣ Filtrar cursos: no aprobados y sin correlativas pendientes
-  // 4️⃣ Filtrar cursos: no aprobados y sin correlativas pendientes
-const availableCourses = allCourses.filter(course => {
-  const alreadyApproved = approvedCourseIds.includes(course.id);
+  // 4️⃣ Filtrar cursos que:
+  // - no estén aprobados
+  // - no tengan correlativas pendientes
+  // - (in_progress también se incluyen)
+  const availableCourses = allCourses.filter((course) => {
+    const alreadyApproved = approvedIds.includes(course.id);
+    const validCorrelates = (course.correlates || [])
+      .map((id) => Number(id))
+      .filter((id) => !isNaN(id) && id > 0);
 
-  // 🔹 Evitamos IDs nulos o no numéricos
-  // 🔧 Convertimos todo a número y filtramos NaN o negativos
-const validCorrelates = (course.correlates || [])
-.map(id => Number(id))
-.filter(id => !isNaN(id) && id > 0);
+    const pendingCorrelatives = validCorrelates.some(
+      (corrId) => !approvedIds.includes(corrId),
+    );
 
-  
+    // Si está cursando, se incluye
+    if (inProgressIds.includes(course.id)) return true;
 
-  const pendingCorrelatives = validCorrelates.some(
-    corrId => !approvedCourseIds.includes(corrId)
-  );
-  for (const c of allCourses) {
-    if (c.correlates?.some(id => isNaN(Number(id)))) {
-      console.warn(`🚨 Curso con correlativas inválidas: ${c.name}`, c.correlates);
-    }
-  }
-  
+    // Si no tiene correlativas pendientes ni está aprobada, se incluye
+    return !alreadyApproved && !pendingCorrelatives;
+  });
 
-  return !alreadyApproved && !pendingCorrelatives;
-});
+  // 5️⃣ Agregar comisiones con estado "future"
+  const today = new Date();
 
-  // 5️⃣ Retornar lista limpia
-  return availableCourses.map(c => ({
-    id: c.id,
-    code: c.code,
-    name: c.name,
-    description: c.description,
-    correlates: c.correlates,
-  }));
+  return availableCourses.map((c) => {
+    let status = 'available';
+    if (approvedIds.includes(c.id)) status = 'passed';
+    else if (inProgressIds.includes(c.id)) status = 'in_progress';
+
+    // 🕒 Filtrar comisiones FUTURAS
+    const futureCommissions =
+      (c.commissions || []).filter((comm) => {
+        const start = new Date(comm.startDate);
+        return start > today; // empieza en el futuro
+      }) || [];
+
+    return {
+      id: c.id,
+      code: c.code,
+      name: c.name,
+      description: c.description,
+      correlates: c.correlates,
+      status,
+      commissions:
+        status === 'available' ? futureCommissions.map((comm) => ({
+          id: comm.id,
+          days: comm.days,
+          shift: comm.shift,
+          mode: comm.mode,
+          startTime: comm.startTime,
+          endTime: comm.endTime,
+          classRoom: comm.classRoom,
+          professorName: comm.professorName,
+          availableSpots: comm.availableSpots,
+          totalSpots: comm.totalSpots,
+          startDate: comm.startDate,
+          endDate: comm.endDate,
+        })) : [],
+    };
+  });
 }
+
 
 }
