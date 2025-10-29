@@ -28,7 +28,7 @@ export class EnrollmentsService {
     @InjectRepository(Commission)
     private commissionRepo: Repository<Commission>,
     @InjectRepository(AcademicHistory)
-    private historyRepo: Repository<AcademicHistory>, 
+    private historyRepo: Repository<AcademicHistory>,
     private readonly gradesService: GradesService, // ✅
 
   ) { }
@@ -175,15 +175,17 @@ async findByUser(userId: number) {
     throw new NotFoundException('No enrollments found for this user');
   }
 
+  // ✅ Traemos también commission
   const histories = await this.historyRepo.find({
     where: { user: { id: userId } },
-    relations: ['course'],
+    relations: ['course', 'commission'],
   });
 
   return enrollments.map((enr) => {
-    const courseStatus = histories.find(
-      (h) => h.course?.id === enr.course?.id
-    )?.status;
+    // ✅ Ahora comparamos por commission.id, no por course.id
+    const relatedHistory = histories.find(
+      (h) => h.commission?.id === enr.commission?.id
+    );
 
     return {
       enrollmentId: enr.id,
@@ -205,11 +207,13 @@ async findByUser(userId: number) {
             classroom: enr.commission.classRoom,
           }
         : { id: null, professorName: 'Sin comisión asignada' },
-      // ✅ Nuevo: incluir estado académico
-      status: courseStatus || 'unknown',
+      // ✅ Nuevo: estado específico por comisión
+      status: relatedHistory?.status || 'in_progress',
+      finalNote: relatedHistory?.finalNote ?? null,
     };
   });
 }
+
 
 
   async findEnrollmentDetail(userId: number, commissionId: number) {
