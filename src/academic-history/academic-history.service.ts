@@ -12,7 +12,7 @@ export class AcademicHistoryService {
   ) {}
 
   // ✅ Obtener historial de un usuario
- async getUserHistory(userId: number) {
+ async getUserHistory(userId: string) {
   const histories = await this.historyRepo.find({
     where: { user: { id: userId } },
     relations: ['user', 'course', 'commission'], // 👈 importante: traemos todo
@@ -45,8 +45,8 @@ export class AcademicHistoryService {
 
   // ✅ Registrar o actualizar una nota final
   async updateGrade(
-    userId: number,
-    courseId: number,
+    userId: string,
+    courseId: string,
     data: { finalNote: string; status: 'passed' | 'failed' },
   ) {
     const record = await this.historyRepo.findOne({

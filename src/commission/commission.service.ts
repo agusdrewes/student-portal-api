@@ -25,7 +25,7 @@ export class CommissionService {
     return 'in_progress';
   }
 
-  async findByCourseWithStatus(courseId: number, status?: 'future' | 'in_progress' | 'past') {
+  async findByCourseWithStatus(courseId: string, status?: 'future' | 'in_progress' | 'past') {
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
   
@@ -41,7 +41,7 @@ export class CommissionService {
   
 
 
-  async findByCourse(courseId: number) {
+  async findByCourse(courseId: string) {
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
   
@@ -54,7 +54,7 @@ export class CommissionService {
   }
   
 
-  async create(courseId: number, dto: CreateCommissionDto) {
+  async create(courseId: string, dto: CreateCommissionDto) {
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
     const commission = this.commissionRepo.create({ ...dto, course });

@@ -7,22 +7,22 @@ export class GradesController {
   constructor(private readonly gradesService: GradesService) {}
 
   @Get('user/:userId')
-  findByUser(@Param('userId') userId: number) {
+  findByUser(@Param('userId') userId: string) {
     return this.gradesService.findByUser(userId);
   }
 
   @Get('user/:userId/commission/:commissionId')
   findByUserAndCommission(
-    @Param('userId') userId: number,
-    @Param('commissionId') commissionId: number,
+    @Param('userId') userId: string,
+    @Param('commissionId') commissionId: string,
   ) {
     return this.gradesService.findByUserAndCommission(userId, commissionId);
   }
 
   @Patch('user/:userId/commission/:commissionId')
   updateGrade(
-    @Param('userId') userId: number,
-    @Param('commissionId') commissionId: number,
+    @Param('userId') userId: string,
+    @Param('commissionId') commissionId: string,
     @Body() dto: UpdateGradeDto,
   ) {
     return this.gradesService.updateGrade(userId, commissionId, dto);

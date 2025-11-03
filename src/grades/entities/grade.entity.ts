@@ -4,8 +4,8 @@ import { Commission } from '../../commission/entities/commission.entity';
 
 @Entity('grades')
 export class Grade {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => User, (user) => user.grades, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })

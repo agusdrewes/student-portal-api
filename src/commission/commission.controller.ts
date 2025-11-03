@@ -7,18 +7,18 @@ export class CommissionController {
   constructor(private readonly commissionService: CommissionService) {}
 
   @Get()
-  findByCourse(@Param('courseId') courseId: number) {
+  findByCourse(@Param('courseId') courseId: string) {
     return this.commissionService.findByCourse(courseId);
   }
 
   @Post()
-  create(@Param('courseId') courseId: number, @Body() dto: CreateCommissionDto) {
+  create(@Param('courseId') courseId: string, @Body() dto: CreateCommissionDto) {
     return this.commissionService.create(courseId, dto);
   }
 
   @Get()
   findByCourseWithStatus(
-    @Param('courseId') courseId: number,
+    @Param('courseId') courseId: string,
     @Query('status') status?: 'future' | 'in_progress' | 'past'
   ) {
     return this.commissionService.findByCourseWithStatus(courseId, status);

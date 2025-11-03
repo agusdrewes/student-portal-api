@@ -19,7 +19,7 @@ export class UserService {
     const newUser = this.usersRepository.create(createUserDto);
     return this.usersRepository.save(newUser);
   }
-  async findUserWithCourses(id: number) {
+  async findUserWithCourses(id: string) {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['enrollments', 'enrollments.course'],

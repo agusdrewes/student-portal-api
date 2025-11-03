@@ -9,8 +9,8 @@ import { User } from '../../user/entities/user.entity';
 
 @Entity('purchases')
 export class Purchase {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   // 🧍 Relación con el usuario que hizo la compra
   @ManyToOne(() => User, (user) => user.purchases, { eager: true })

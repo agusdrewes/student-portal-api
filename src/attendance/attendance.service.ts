@@ -17,7 +17,7 @@ export class AttendanceService {
   ) {}
 
   // ✅ Registrar asistencia
-  async markAttendance(userId: number, commissionId: number, present: boolean, date?: string) {
+  async markAttendance(userId: string, commissionId: string, present: boolean, date?: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const commission = await this.commissionRepo.findOne({ where: { id: commissionId } });
 
@@ -46,7 +46,7 @@ export class AttendanceService {
   }
 
   // ✅ Obtener asistencias de un alumno en una comisión
-  async getUserAttendance(userId: number, commissionId: number) {
+  async getUserAttendance(userId: string, commissionId: string) {
     return this.attendanceRepo.find({
       where: { user: { id: userId }, commission: { id: commissionId } },
       order: { date: 'ASC' },
@@ -54,7 +54,7 @@ export class AttendanceService {
   }
 
   // ✅ Obtener asistencia general de una comisión
-  async getCommissionAttendance(commissionId: number) {
+  async getCommissionAttendance(commissionId: string) {
     return this.attendanceRepo.find({
       where: { commission: { id: commissionId } },
       relations: ['user'],

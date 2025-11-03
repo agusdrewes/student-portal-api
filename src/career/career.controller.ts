@@ -13,7 +13,7 @@ export class CareerController {
 
   // GET /careers/:id
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.careerService.findOne(id);
   }
 
@@ -25,7 +25,7 @@ export class CareerController {
 
   // POST /careers/:id/courses
   @Post(':id/courses')
-  addCourse(@Param('id') careerId: number, @Body('courseId') courseId: number) {
+  addCourse(@Param('id') careerId: string, @Body('courseId') courseId: string) {
     return this.careerService.addCourse(careerId, courseId);
   }
 }

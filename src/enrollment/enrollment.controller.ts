@@ -9,9 +9,9 @@ export class EnrollmentsController {
   // Inscribirse a una comisión
   @Post(':courseId/commissions/:commissionId')
   enroll(
-    @Param('courseId') courseId: number,
-    @Param('commissionId') commissionId: number,
-    @Body('userId') userId: number,
+    @Param('courseId') courseId: string,
+    @Param('commissionId') commissionId: string,
+    @Body('userId') userId: string,
   ) {
     return this.enrollmentsService.enroll({ userId, courseId, commissionId });
   }
@@ -19,24 +19,24 @@ export class EnrollmentsController {
   // Darse de baja
   @Delete(':courseId/commissions/:commissionId')
   withdraw(
-    @Param('courseId') courseId: number,
-    @Param('commissionId') commissionId: number,
-    @Body('userId') userId: number,
+    @Param('courseId') courseId: string,
+    @Param('commissionId') commissionId: string,
+    @Body('userId') userId: string,
   ) {
     return this.enrollmentsService.withdraw(userId, commissionId);
   }
 
   // Ver todas las inscripciones
   @Get()
-  getUserEnrollments(@Query('userId') userId: number) {
+  getUserEnrollments(@Query('userId') userId: string) {
     return this.enrollmentsService.findByUser(userId);
   }
 
   // Ver detalle de una inscripción
   @Get(':commissionId')
   getEnrollmentDetail(
-    @Param('commissionId') commissionId: number,
-    @Query('userId') userId: number,
+    @Param('commissionId') commissionId: string,
+    @Query('userId') userId: string,
   ) {
     return this.enrollmentsService.findEnrollmentDetail(userId, commissionId);
   }

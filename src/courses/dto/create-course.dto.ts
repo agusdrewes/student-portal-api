@@ -13,5 +13,5 @@ export class CreateCourseDto {
 
   @IsOptional()
   @IsArray()
-  correlates?: number[];
+  correlates?: string[];
 }

@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { validate as isUuid } from 'uuid'; 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Course } from './entities/course.entity';
@@ -18,9 +19,6 @@ export class CoursesService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  // ============================================================
-  // ✅ 1️⃣ Obtener todos los cursos
-  // ============================================================
   async findAll() {
     const courses = await this.courseRepo.find({
       relations: ['commissions', 'careers'],
@@ -40,13 +38,11 @@ export class CoursesService {
     }));
   }
 
-  // ============================================================
-  // ✅ 2️⃣ Obtener un curso por ID (con correlativas y carreras)
-  // ============================================================
-  async findOne(id: number) {
-    if (!id || isNaN(id)) {
+
+  async findOne(id: string) {
+    if (!id || !isUuid(id)) {
       console.warn('⚠️ findOne() recibió un ID inválido (NaN o null):', id);
-      return null; // ✅ devolvemos null en lugar de lanzar error
+      return null; 
     }
     
 
@@ -59,9 +55,8 @@ export class CoursesService {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
 
-    // ✅ Limpieza de correlativas con IDs válidos
 const validCorrelates = (course.correlates || []).filter(
-  (id) => typeof id === 'number' && !isNaN(id) && id > 0
+  (id) => typeof id === 'string' && !isUuid(id) 
 );
 
 const correlatives =
@@ -86,10 +81,8 @@ const correlatives =
     };
   }
 
-  // ============================================================
-  // ✅ 3️⃣ Obtener los cursos de las carreras del usuario autenticado
-  // ============================================================
-  async findCoursesForUser(userId: number) {
+
+  async findCoursesForUser(userId: string) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
       relations: ['career'],
@@ -99,7 +92,6 @@ const correlatives =
       throw new NotFoundException('User or career not found');
     }
 
-    // 💡 Buscar todos los cursos donde la carrera del usuario esté asociada
     const courses = await this.courseRepo
       .createQueryBuilder('course')
       .leftJoinAndSelect('course.careers', 'career')
@@ -114,7 +106,7 @@ const correlatives =
     return Promise.all(
       courses.map(async (c) => {
         const validCorrelates = (c.correlates || []).filter(
-          (id) => typeof id === 'number' && !isNaN(id) && id > 0
+          (id) => typeof id === 'string' && !isUuid(id) 
         );
         
         const correlatives =
@@ -137,9 +129,7 @@ const correlatives =
     );
   }
 
-  // ============================================================
-  // ✅ 4️⃣ Crear un nuevo curso
-  // ============================================================
+
   async create(courseData: Partial<Course>) {
     if (!courseData.name || !courseData.code) {
       throw new BadRequestException('Missing course name or code');
@@ -149,11 +139,7 @@ const correlatives =
     return this.courseRepo.save(course);
   }
 
-  // ============================================================
-// ✅ NUEVO: Filtrar cursos disponibles para inscripción
-// ============================================================
-async findAvailableCoursesForUser(userId: number) {
-  // 1️⃣ Buscar usuario con su carrera
+async findAvailableCoursesForUser(userId: string) {
   const user = await this.userRepo.findOne({
     where: { id: userId },
     relations: ['career'],
@@ -163,7 +149,6 @@ async findAvailableCoursesForUser(userId: number) {
     throw new NotFoundException('User or career not found');
   }
 
-  // 2️⃣ Traer todos los cursos de su carrera con comisiones
   const allCourses = await this.courseRepo
     .createQueryBuilder('course')
     .leftJoinAndSelect('course.careers', 'career')
@@ -171,7 +156,6 @@ async findAvailableCoursesForUser(userId: number) {
     .where('career.id = :careerId', { careerId: user.career.id })
     .getMany();
 
-  // 3️⃣ Traer historial académico del usuario
   const history = await this.courseRepo.manager
     .getRepository('academic_history')
     .createQueryBuilder('h')
@@ -179,7 +163,6 @@ async findAvailableCoursesForUser(userId: number) {
     .where('h.userId = :userId', { userId })
     .getMany();
 
-  // ✅ Clasificamos los cursos según su estado
   const approvedIds = history
     .filter((h) => h.status === 'passed')
     .map((h) => h.course.id);
@@ -188,28 +171,22 @@ async findAvailableCoursesForUser(userId: number) {
     .filter((h) => h.status === 'in_progress')
     .map((h) => h.course.id);
 
-  // 4️⃣ Filtrar cursos que:
-  // - no estén aprobados
-  // - no tengan correlativas pendientes
-  // - (in_progress también se incluyen)
+
   const availableCourses = allCourses.filter((course) => {
     const alreadyApproved = approvedIds.includes(course.id);
     const validCorrelates = (course.correlates || [])
-      .map((id) => Number(id))
-      .filter((id) => !isNaN(id) && id > 0);
+      .map((id) => String(id))
+      .filter((id) => !isUuid(id));
 
     const pendingCorrelatives = validCorrelates.some(
       (corrId) => !approvedIds.includes(corrId),
     );
 
-    // Si está cursando, se incluye
     if (inProgressIds.includes(course.id)) return true;
 
-    // Si no tiene correlativas pendientes ni está aprobada, se incluye
     return !alreadyApproved && !pendingCorrelatives;
   });
 
-  // 5️⃣ Agregar comisiones con estado "future"
   const today = new Date();
 
   return availableCourses.map((c) => {
@@ -217,11 +194,10 @@ async findAvailableCoursesForUser(userId: number) {
     if (approvedIds.includes(c.id)) status = 'passed';
     else if (inProgressIds.includes(c.id)) status = 'in_progress';
 
-    // 🕒 Filtrar comisiones FUTURAS
     const futureCommissions =
       (c.commissions || []).filter((comm) => {
         const start = new Date(comm.startDate);
-        return start > today; // empieza en el futuro
+        return start > today; 
       }) || [];
 
     return {

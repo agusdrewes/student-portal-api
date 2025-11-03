@@ -12,6 +12,7 @@ import { Course } from '../courses/entities/course.entity';
 import { Commission } from '../commission/entities/commission.entity';
 import { AcademicHistory } from '../academic-history/entities/academic-history.entity';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
+import { validate as isUuid } from 'uuid';
 import { start } from 'repl';
 import { GradesService } from '../grades/grades.service';
 
@@ -138,7 +139,7 @@ export class EnrollmentsService {
 
 
   // ✅ Retirarse de una comisión (y borrar el registro de historial si sigue en progreso)
-  async withdraw(userId: number, commissionId: number) {
+  async withdraw(userId: string, commissionId: string) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },
       relations: ['commission', 'course'],
@@ -161,43 +162,43 @@ export class EnrollmentsService {
   }
 
   // ✅ Ver todos los cursos/comisiones de un usuario
-async findByUser(userId: number) {
-  if (!userId || isNaN(userId)) {
-    throw new BadRequestException('Invalid userId');
-  }
+  async findByUser(userId: string) {
+    if (!userId || !isUuid(userId)) {
+      throw new BadRequestException('Invalid userId');
+    }
 
-  const enrollments = await this.enrollmentRepo.find({
-    where: { user: { id: userId } },
-    relations: ['course', 'commission'],
-  });
+    const enrollments = await this.enrollmentRepo.find({
+      where: { user: { id: userId } },
+      relations: ['course', 'commission'],
+    });
 
-  if (!enrollments.length) {
-    throw new NotFoundException('No enrollments found for this user');
-  }
+    if (!enrollments.length) {
+      throw new NotFoundException('No enrollments found for this user');
+    }
 
-  // ✅ Traemos también commission
-  const histories = await this.historyRepo.find({
-    where: { user: { id: userId } },
-    relations: ['course', 'commission'],
-  });
+    // ✅ Traemos también commission
+    const histories = await this.historyRepo.find({
+      where: { user: { id: userId } },
+      relations: ['course', 'commission'],
+    });
 
-  return enrollments.map((enr) => {
-    // ✅ Ahora comparamos por commission.id, no por course.id
-    const relatedHistory = histories.find(
-      (h) => h.commission?.id === enr.commission?.id
-    );
+    return enrollments.map((enr) => {
+      // ✅ Ahora comparamos por commission.id, no por course.id
+      const relatedHistory = histories.find(
+        (h) => h.commission?.id === enr.commission?.id
+      );
 
-    return {
-      enrollmentId: enr.id,
-      course: enr.course
-        ? {
+      return {
+        enrollmentId: enr.id,
+        course: enr.course
+          ? {
             id: enr.course.id,
             name: enr.course.name,
             code: enr.course.code,
           }
-        : { id: null, name: 'Sin curso asignado' },
-      commission: enr.commission
-        ? {
+          : { id: null, name: 'Sin curso asignado' },
+        commission: enr.commission
+          ? {
             id: enr.commission.id,
             professorName: enr.commission.professorName,
             shift: enr.commission.shift,
@@ -206,16 +207,16 @@ async findByUser(userId: number) {
             endTime: enr.commission.endTime,
             classroom: enr.commission.classRoom,
           }
-        : { id: null, professorName: 'Sin comisión asignada' },
-      status: relatedHistory?.status || 'in_progress',
-      finalNote: relatedHistory?.finalNote ?? null,
-    };
-  });
-}
+          : { id: null, professorName: 'Sin comisión asignada' },
+        status: relatedHistory?.status || 'in_progress',
+        finalNote: relatedHistory?.finalNote ?? null,
+      };
+    });
+  }
 
 
 
-  async findEnrollmentDetail(userId: number, commissionId: number) {
+  async findEnrollmentDetail(userId: string, commissionId: string) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },
       relations: ['course', 'commission'],

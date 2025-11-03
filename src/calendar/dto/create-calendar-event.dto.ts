@@ -30,6 +30,6 @@ export class CreateCalendarEventDto {
   date: string;
 
   @IsOptional()
-  @IsInt()
-  userId?: number; // ID del usuario que crea el evento
+  @IsString()
+  userId?: string; 
 }

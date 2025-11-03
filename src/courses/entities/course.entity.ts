@@ -7,8 +7,8 @@ import { Career } from '../../career/entities/career.entity';
 
 @Entity('courses')
 export class Course {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ unique: true })
   code: string;
@@ -20,8 +20,8 @@ export class Course {
   description?: string;
 
   // correlativas: lista de IDs de otros cursos
-  @Column('int', { array: true, default: [] })
-  correlates: number[];
+  @Column('uuid', { array: true, default: [] })
+  correlates: string[];
 
   @OneToMany(() => Commission, (commission) => commission.course)
   commissions: Commission[];

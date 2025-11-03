@@ -3,8 +3,8 @@ import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 
 @Entity('grades')
 export class Grade {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => Enrollment, { onDelete: 'CASCADE' })
   enrollment: Enrollment;

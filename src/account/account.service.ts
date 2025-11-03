@@ -14,13 +14,13 @@ export class AccountService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  async getBalance(userId: number) {
+  async getBalance(userId: string) {
     const account = await this.accountRepo.findOne({ where: { user: { id: userId } } });
     if (!account) throw new NotFoundException('Account not found');
     return { balance: account.balance.toFixed(2) };
   }
 
-  async deposit(userId: number, dto: DepositDto) {
+  async deposit(userId: string, dto: DepositDto) {
     const { amount } = dto;
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
