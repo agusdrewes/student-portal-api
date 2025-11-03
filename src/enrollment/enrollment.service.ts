@@ -207,7 +207,6 @@ async findByUser(userId: number) {
             classroom: enr.commission.classRoom,
           }
         : { id: null, professorName: 'Sin comisión asignada' },
-      // ✅ Nuevo: estado específico por comisión
       status: relatedHistory?.status || 'in_progress',
       finalNote: relatedHistory?.finalNote ?? null,
     };

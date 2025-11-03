@@ -20,6 +20,11 @@ export class CalendarController {
     return this.service.findOne(Number(id));
   }
 
+  @Get('user/:userId')
+  async getByUser(@Param('userId') userId: string) {
+    return this.service.findByUser(Number(userId));
+  }
+
   @Post()
   create(@Body() body: CreateCalendarEventDto) {
     return this.service.create(body);

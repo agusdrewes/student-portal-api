@@ -35,6 +35,19 @@ export class CalendarService {
     return event;
   }
 
+  async findByUser(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    const events = await this.calendarRepository.find({
+      where: { user: { id: userId } },
+      order: { date: 'ASC' },
+    });
+
+    if (!events.length) throw new NotFoundException('No events found for this user');
+    return events;
+  }
+
   async create(dto: CreateCalendarEventDto) {
     const event = this.calendarRepository.create(dto);
 
