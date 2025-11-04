@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
+import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
 
 @Controller('courses')
 export class CoursesController {
-  constructor(private readonly coursesService: CoursesService) {}
+  constructor(private readonly coursesService: CoursesService) { }
 
   @Get()
   findAll() {
@@ -16,10 +17,11 @@ export class CoursesController {
     return this.coursesService.findCoursesForUser(userId);
   }
 
-@Get('available')
-findAvailableCourses(@Query('userId') userId: string) {
-  return this.coursesService.findAvailableCoursesForUser(userId);
-}
+  @UseGuards(JwtDecodeGuard)
+  @Get('available')
+  findAvailableCourses(@Query('userId') userId: string) {
+    return this.coursesService.findAvailableCoursesForUser(userId);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

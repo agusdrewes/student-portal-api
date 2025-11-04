@@ -7,6 +7,12 @@ import {
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 
+export enum NotiType {
+  Sanction = 'sanction',
+  Exam = 'exam',
+  Event = 'event',
+}
+
 @Entity('notifications')
 export class Notification {
   @PrimaryGeneratedColumn('uuid')
@@ -20,6 +26,9 @@ export class Notification {
 
   @Column()
   message: string;
+
+  @Column({ type: 'enum', enum: NotiType })
+  type: NotiType;
 
   @Column({ default: false })
   isRead: boolean;

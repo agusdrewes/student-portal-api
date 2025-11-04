@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { CalendarService } from './calendar.service';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
+import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
 
 @Controller('calendar')
 export class CalendarController {
@@ -20,6 +21,7 @@ export class CalendarController {
     return this.service.findOne(String(id));
   }
 
+  @UseGuards(JwtDecodeGuard)
   @Get('user/:userId')
   async getByUser(@Param('userId') userId: string) {
     return this.service.findByUser(String(userId));
