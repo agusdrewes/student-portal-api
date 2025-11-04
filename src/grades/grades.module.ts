@@ -10,6 +10,6 @@ import { AcademicHistory } from '../academic-history/entities/academic-history.e
   imports: [TypeOrmModule.forFeature([Grade, User, Commission, AcademicHistory])],
   controllers: [GradesController],
   providers: [GradesService],
-  exports: [GradesService], // ✅ para que pueda usarse desde Enrollments
+  exports: [GradesService], 
 })
 export class GradesModule {}

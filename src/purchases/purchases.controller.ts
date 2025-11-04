@@ -8,14 +8,14 @@ export class PurchasesController {
 
   @Post()
   create(
-    @Param('userId') userId: number,
+    @Param('userId') userId: string,
     @Body() dto: CreatePurchaseDto,
   ) {
     return this.purchasesService.create(userId, dto);
   }
 
   @Get()
-  findAll(@Param('userId') userId: number) {
+  findAll(@Param('userId') userId: string) {
     return this.purchasesService.findByUser(userId);
   }
 }

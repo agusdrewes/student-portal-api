@@ -19,7 +19,7 @@ export class UserController {
 
   @Get(':id/courses')
   findUserCourses(@Param('id') id: string) {
-    return this.userService.findUserWithCourses(Number(id));
+    return this.userService.findUserWithCourses(String(id));
   }
 
 }

@@ -15,7 +15,7 @@ export class PurchasesService {
   ) {}
 
   // ✅ Crear una nueva compra
-  async create(userId: number, dto: CreatePurchaseDto) {
+  async create(userId: string, dto: CreatePurchaseDto) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -29,7 +29,7 @@ export class PurchasesService {
   }
 
   // ✅ Obtener todas las compras de un usuario
-  async findByUser(userId: number) {
+  async findByUser(userId: string) {
     const purchases = await this.purchaseRepo.find({
       where: { user: { id: userId } },
       order: { date: 'DESC' },

@@ -8,8 +8,8 @@ export class AttendanceController {
   // ✅ Registrar asistencia (POST)
   @Post(':commissionId/:userId')
   markAttendance(
-    @Param('userId') userId: number,
-    @Param('commissionId') commissionId: number,
+    @Param('userId') userId: string,
+    @Param('commissionId') commissionId: string,
     @Body() body: { present: boolean; date?: string },
   ) {
     return this.attendanceService.markAttendance(
@@ -23,15 +23,15 @@ export class AttendanceController {
   // ✅ Obtener asistencias de un usuario en una comisión
   @Get(':commissionId/:userId')
   getUserAttendance(
-    @Param('userId') userId: number,
-    @Param('commissionId') commissionId: number,
+    @Param('userId') userId: string,
+    @Param('commissionId') commissionId: string,
   ) {
     return this.attendanceService.getUserAttendance(userId, commissionId);
   }
 
   // ✅ Obtener todas las asistencias de una comisión
   @Get(':commissionId')
-  getCommissionAttendance(@Param('commissionId') commissionId: number) {
+  getCommissionAttendance(@Param('commissionId') commissionId: string) {
     return this.attendanceService.getCommissionAttendance(commissionId);
   }
 }

@@ -4,8 +4,9 @@ import { Course } from '../../courses/entities/course.entity';
 
 @Entity('careers')
 export class Career {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
 
     @Column()
     name: string;
@@ -13,13 +14,12 @@ export class Career {
     @Column({ nullable: true })
     description: string;
 
-    // Relación con usuarios
     @OneToMany(() => User, (user) => user.career)
     users: User[];
 
     @ManyToMany(() => Course, (course) => course.careers, { cascade: true })
     @JoinTable({
-        name: 'career_courses', // tabla intermedia
+        name: 'career_courses', 
         joinColumn: { name: 'career_id', referencedColumnName: 'id' },
         inverseJoinColumn: { name: 'course_id', referencedColumnName: 'id' },
     })

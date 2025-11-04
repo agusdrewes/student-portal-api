@@ -27,7 +27,7 @@ export class GradesService {
     ) { }
 
     // 🧩 Crear registro inicial (cuando un alumno se inscribe)
-    async createInitial(userId: number, commissionId: number) {
+    async createInitial(userId: string, commissionId: string) {
         const user = await this.userRepo.findOne({ where: { id: userId } });
         const commission = await this.commissionRepo.findOne({ where: { id: commissionId } });
 
@@ -45,7 +45,7 @@ export class GradesService {
     }
 
     // 🧩 Obtener todas las calificaciones de un alumno
-    async findByUser(userId: number) {
+    async findByUser(userId: string) {
         const grades = await this.gradeRepo.find({
             where: { user: { id: userId } },
             relations: ['commission'],
@@ -55,7 +55,7 @@ export class GradesService {
     }
 
     // 🧩 Actualizar notas y reflejar en historial académico
-    async updateGrade(userId: number, commissionId: number, dto: UpdateGradeDto) {
+    async updateGrade(userId: string, commissionId: string, dto: UpdateGradeDto) {
         const grade = await this.gradeRepo.findOne({
             where: { user: { id: userId }, commission: { id: commissionId } },
             relations: ['user', 'commission'],
@@ -90,7 +90,7 @@ export class GradesService {
     }
 
     // 🧩 Obtener notas de un alumno en una comisión específica
-    async findByUserAndCommission(userId: number, commissionId: number) {
+    async findByUserAndCommission(userId: string, commissionId: string) {
         const grade = await this.gradeRepo.findOne({
             where: { user: { id: userId }, commission: { id: commissionId } },
             relations: ['commission'],

@@ -7,15 +7,15 @@ export class AcademicHistoryController {
 
   // ✅ Ver historial completo de un alumno
   @Get(':userId')
-  getUserHistory(@Param('userId') userId: number) {
+  getUserHistory(@Param('userId') userId: string) {
     return this.academicHistoryService.getUserHistory(userId);
   }
 
   // ✅ Actualizar nota final y estado (aprobado/desaprobado)
   @Patch(':userId/courses/:courseId')
   updateGrade(
-    @Param('userId') userId: number,
-    @Param('courseId') courseId: number,
+    @Param('userId') userId: string,
+    @Param('courseId') courseId: string,
     @Body() body: { finalNote: string; status: 'passed' | 'failed' },
   ) {
     return this.academicHistoryService.updateGrade(userId, courseId, body);

@@ -17,12 +17,12 @@ export class CalendarController {
 
   @Get(':id')
   getOne(@Param('id') id: string) {
-    return this.service.findOne(Number(id));
+    return this.service.findOne(String(id));
   }
 
   @Get('user/:userId')
   async getByUser(@Param('userId') userId: string) {
-    return this.service.findByUser(Number(userId));
+    return this.service.findByUser(String(userId));
   }
 
   @Post()
@@ -32,11 +32,11 @@ export class CalendarController {
 
   @Put(':id')
   update(@Param('id') id: string, @Body() body: Partial<CreateCalendarEventDto>) {
-    return this.service.update(Number(id), body);
+    return this.service.update(String(id), body);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.service.delete(Number(id));
+    return this.service.delete(String(id));
   }
 }

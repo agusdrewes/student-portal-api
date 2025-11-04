@@ -11,8 +11,8 @@ import { Commission } from '../../commission/entities/commission.entity';
 
 @Entity('academic_history')
 export class AcademicHistory {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => User, (user) => user.academicHistory, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })

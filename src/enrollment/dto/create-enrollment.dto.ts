@@ -1,12 +1,12 @@
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CreateEnrollmentDto {
-  @IsNumber()
-  userId: number;
+  @IsString()
+  userId: string;
 
-  @IsNumber()
-  courseId: number;
+  @IsString()
+  courseId: string;
 
-  @IsNumber()
-  commissionId: number;
+  @IsString()
+  commissionId: string;
 }

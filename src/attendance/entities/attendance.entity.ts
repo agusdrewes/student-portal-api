@@ -10,8 +10,8 @@ import { Commission } from '../../commission/entities/commission.entity';
 
 @Entity('attendances')
 export class Attendance {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => User, (user) => user.attendances, { onDelete: 'CASCADE' })
   user: User;

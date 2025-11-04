@@ -6,46 +6,26 @@ import { CreateCourseDto } from './dto/create-course.dto';
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
-  // ============================================================
-  // ✅ 1️⃣ Obtener todos los cursos del sistema (Admin)
-  // ============================================================
   @Get()
   findAll() {
     return this.coursesService.findAll();
   }
 
-  // ============================================================
-  // ✅ 2️⃣ Obtener los cursos disponibles para un usuario
-  // Ejemplo: GET /courses/user?userId=1
-  // ============================================================
   @Get('user')
-  findCoursesForUser(@Query('userId') userId: number) {
-    // ⚠️ Por ahora userId viene por query. En el futuro vendrá del JWT.
-    if (!userId) userId = 1;
+  findCoursesForUser(@Query('userId') userId: string) {
     return this.coursesService.findCoursesForUser(userId);
   }
 
-  // ============================================================
-// ✅ NUEVO ENDPOINT: /courses/available?userId=1
-// ============================================================
 @Get('available')
-findAvailableCourses(@Query('userId') userId: number) {
-  if (!userId) userId = 1;
+findAvailableCourses(@Query('userId') userId: string) {
   return this.coursesService.findAvailableCoursesForUser(userId);
 }
 
-  // ============================================================
-  // ✅ 3️⃣ Obtener un curso específico
-  // Ejemplo: GET /courses/1
-  // ============================================================
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.coursesService.findOne(id);
   }
 
-  // ============================================================
-  // ✅ 4️⃣ Crear un curso nuevo
-  // ============================================================
   @Post()
   create(@Body() dto: CreateCourseDto) {
     return this.coursesService.create(dto);

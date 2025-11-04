@@ -26,7 +26,7 @@ export class CalendarService {
     return query.getMany();
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const event = await this.calendarRepository.findOne({
       where: { id },
       relations: ['user'],
@@ -35,7 +35,7 @@ export class CalendarService {
     return event;
   }
 
-  async findByUser(userId: number) {
+  async findByUser(userId: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -59,13 +59,13 @@ export class CalendarService {
     return this.calendarRepository.save(event);
   }
 
-  async update(id: number, dto: Partial<CreateCalendarEventDto>) {
+  async update(id: string, dto: Partial<CreateCalendarEventDto>) {
     const event = await this.findOne(id);
     Object.assign(event, dto);
     return this.calendarRepository.save(event);
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     const event = await this.findOne(id);
     await this.calendarRepository.remove(event);
     return { deleted: true };

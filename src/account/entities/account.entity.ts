@@ -3,8 +3,8 @@ import { User } from '../../user/entities/user.entity';
 
 @Entity('accounts')
 export class Account {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @OneToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()

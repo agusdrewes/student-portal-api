@@ -5,8 +5,8 @@ import { Commission } from '../../commission/entities/commission.entity';
 
 @Entity('enrollments')
 export class Enrollment {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => User, (user) => user.enrollments, { eager: false })
   @JoinColumn({ name: 'userId' })

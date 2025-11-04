@@ -17,7 +17,7 @@ export class CareerService {
     return this.careerRepo.find({ relations: ['courses'] });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const career = await this.careerRepo.findOne({ where: { id }, relations: ['courses'] });
     if (!career) throw new NotFoundException(`Career with ID ${id} not found`);
     return career;
@@ -28,7 +28,7 @@ export class CareerService {
     return this.careerRepo.save(career);
   }
 
-  async addCourse(careerId: number, courseId: number) {
+  async addCourse(careerId: string, courseId: string) {
     const career = await this.careerRepo.findOne({ where: { id: careerId }, relations: ['courses'] });
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
 

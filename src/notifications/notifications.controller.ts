@@ -8,20 +8,20 @@ export class NotificationsController {
 
   // ✅ Obtener las últimas 10 notificaciones de un usuario
   @Get()
-  getLatest(@Param('userId') userId: number) {
+  getLatest(@Param('userId') userId: string) {
     return this.notificationsService.getLatest(userId);
   }
 
   // ✅ Obtener solo las no leídas
   @Get('unread')
-  getUnread(@Param('userId') userId: number) {
+  getUnread(@Param('userId') userId: string) {
     return this.notificationsService.getUnread(userId);
   }
 
   // ✅ Crear una notificación para un usuario (para pruebas)
   @Post()
   create(
-    @Param('userId') userId: number,
+    @Param('userId') userId: string,
     @Body() dto: Omit<CreateNotificationDto, 'userId'>,
   ) {
     return this.notificationsService.create(userId, dto.title, dto.message);
@@ -29,7 +29,7 @@ export class NotificationsController {
 
   // ✅ Marcar como leída una notificación específica
   @Patch(':notificationId/read')
-  markAsRead(@Param('notificationId') id: number) {
+  markAsRead(@Param('notificationId') id: string) {
     return this.notificationsService.markAsRead(id);
   }
 }

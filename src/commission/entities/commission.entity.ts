@@ -7,8 +7,8 @@ import { Grade } from 'src/grades/entities/grade.entity';
 
 @Entity('commissions')
 export class Commission {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   days: string;
@@ -41,12 +41,10 @@ export class Commission {
   price: string;
 
   @Column({ type: 'date', default: () => 'CURRENT_DATE' })
-startDate: string;
+  startDate: string;
 
-@Column({ type: 'date', default: () => 'CURRENT_DATE' })
-endDate: string;
-
-
+  @Column({ type: 'date', default: () => 'CURRENT_DATE' })
+  endDate: string;
 
   @ManyToOne(() => Course, (course) => course.commissions, { onDelete: 'CASCADE' })
   course: Course;
