@@ -35,9 +35,6 @@ export class GradesService {
         const grade = new Grade();
         grade.user = user;
         grade.commission = commission;
-        grade.firstExam = 0;
-        grade.secondExam = 0;
-        grade.finalExam = 0;
         grade.status = 'in_progress';
 
         return this.gradeRepo.save(grade);
