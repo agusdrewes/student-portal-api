@@ -9,6 +9,6 @@ import { Notification } from './entities/notifications.entity';
   imports: [TypeOrmModule.forFeature([Notification, User])],
   providers: [NotificationsService],
   controllers: [NotificationsController],
-  exports: [NotificationsService], // 👈 por si querés usarlo desde otros servicios (ej: enrollments)
+  exports: [NotificationsService], 
 })
 export class NotificationsModule {}

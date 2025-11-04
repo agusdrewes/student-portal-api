@@ -4,21 +4,18 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @Controller('users/:userId/notifications')
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(private readonly notificationsService: NotificationsService) { }
 
-  // ✅ Obtener las últimas 10 notificaciones de un usuario
   @Get()
   getLatest(@Param('userId') userId: string) {
     return this.notificationsService.getLatest(userId);
   }
 
-  // ✅ Obtener solo las no leídas
   @Get('unread')
   getUnread(@Param('userId') userId: string) {
     return this.notificationsService.getUnread(userId);
   }
 
-  // ✅ Crear una notificación para un usuario (para pruebas)
   @Post()
   create(
     @Param('userId') userId: string,
@@ -27,7 +24,6 @@ export class NotificationsController {
     return this.notificationsService.create(userId, dto.title, dto.message);
   }
 
-  // ✅ Marcar como leída una notificación específica
   @Patch(':notificationId/read')
   markAsRead(@Param('notificationId') id: string) {
     return this.notificationsService.markAsRead(id);

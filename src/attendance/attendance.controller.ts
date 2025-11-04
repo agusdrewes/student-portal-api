@@ -3,9 +3,8 @@ import { AttendanceService } from './attendance.service';
 
 @Controller('attendances')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(private readonly attendanceService: AttendanceService) { }
 
-  // ✅ Registrar asistencia (POST)
   @Post(':commissionId/:userId')
   markAttendance(
     @Param('userId') userId: string,
@@ -20,7 +19,6 @@ export class AttendanceController {
     );
   }
 
-  // ✅ Obtener asistencias de un usuario en una comisión
   @Get(':commissionId/:userId')
   getUserAttendance(
     @Param('userId') userId: string,
@@ -29,7 +27,6 @@ export class AttendanceController {
     return this.attendanceService.getUserAttendance(userId, commissionId);
   }
 
-  // ✅ Obtener todas las asistencias de una comisión
   @Get(':commissionId')
   getCommissionAttendance(@Param('commissionId') commissionId: string) {
     return this.attendanceService.getCommissionAttendance(commissionId);

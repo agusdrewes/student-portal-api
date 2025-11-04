@@ -12,7 +12,6 @@ async function bootstrap() {
     credentials: true, // necesario si usás cookies o headers de autenticación
   });
 
-  // ✅ Validación global (tu configuración original)
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

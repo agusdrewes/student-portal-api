@@ -5,7 +5,7 @@ export enum EventType {
   Cafeteria = 'cafeteria',
   Exam = 'exam',
   Extracurricular = 'extracurricular',
-  Sancion = 'sanción',
+  Evento = 'evento',
 }
 
 @Entity('calendar_events')

@@ -9,41 +9,39 @@ export class AcademicHistoryService {
   constructor(
     @InjectRepository(AcademicHistory)
     private historyRepo: Repository<AcademicHistory>,
-  ) {}
+  ) { }
 
-  // ✅ Obtener historial de un usuario
- async getUserHistory(userId: string) {
-  const histories = await this.historyRepo.find({
-    where: { user: { id: userId } },
-    relations: ['user', 'course', 'commission'], // 👈 importante: traemos todo
-    order: { year: 'ASC' },
-  });
+  async getUserHistory(userId: string) {
+    const histories = await this.historyRepo.find({
+      where: { user: { id: userId } },
+      relations: ['user', 'course', 'commission'],
+      order: { year: 'ASC' },
+    });
 
-  if (!histories.length) {
-    throw new NotFoundException('No academic history found for this user');
-  }
+    if (!histories.length) {
+      throw new NotFoundException('No academic history found for this user');
+    }
 
-  return histories.map((h) => ({
-    id: h.id,
-    course: h.course
-      ? { id: h.course.id, name: h.course.name }
-      : { id: null, name: 'Curso no encontrado' },
-    commission: h.commission
-      ? {
+    return histories.map((h) => ({
+      id: h.id,
+      course: h.course
+        ? { id: h.course.id, name: h.course.name }
+        : { id: null, name: 'Curso no encontrado' },
+      commission: h.commission
+        ? {
           id: h.commission.id,
           professorName: h.commission.professorName,
           shift: h.commission.shift,
         }
-      : { id: null, professorName: 'Comisión no encontrada' },
-    semester: h.semester,
-    year: h.year,
-    status: h.status,
-    finalNote: h.finalNote,
-  }));
-}
+        : { id: null, professorName: 'Comisión no encontrada' },
+      semester: h.semester,
+      year: h.year,
+      status: h.status,
+      finalNote: h.finalNote,
+    }));
+  }
 
 
-  // ✅ Registrar o actualizar una nota final
   async updateGrade(
     userId: string,
     courseId: string,

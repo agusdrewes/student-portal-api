@@ -9,4 +9,4 @@ import { AcademicHistoryController } from './academic-history.controller';
   controllers: [AcademicHistoryController],
   providers: [AcademicHistoryService],
 })
-export class AcademicHistoryModule {}
+export class AcademicHistoryModule { }

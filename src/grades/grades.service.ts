@@ -26,7 +26,6 @@ export class GradesService {
         private readonly historyRepo: Repository<AcademicHistory>,
     ) { }
 
-    // 🧩 Crear registro inicial (cuando un alumno se inscribe)
     async createInitial(userId: string, commissionId: string) {
         const user = await this.userRepo.findOne({ where: { id: userId } });
         const commission = await this.commissionRepo.findOne({ where: { id: commissionId } });
@@ -44,7 +43,6 @@ export class GradesService {
         return this.gradeRepo.save(grade);
     }
 
-    // 🧩 Obtener todas las calificaciones de un alumno
     async findByUser(userId: string) {
         const grades = await this.gradeRepo.find({
             where: { user: { id: userId } },
@@ -54,7 +52,6 @@ export class GradesService {
         return grades;
     }
 
-    // 🧩 Actualizar notas y reflejar en historial académico
     async updateGrade(userId: string, commissionId: string, dto: UpdateGradeDto) {
         const grade = await this.gradeRepo.findOne({
             where: { user: { id: userId }, commission: { id: commissionId } },
@@ -65,7 +62,6 @@ export class GradesService {
 
         Object.assign(grade, dto);
 
-        // 🧠 Lógica automática de aprobación
         if (grade.finalExam !== null && grade.finalExam !== undefined) {
             if (grade.finalExam >= 4) {
                 grade.status = 'passed';
@@ -73,7 +69,6 @@ export class GradesService {
                 grade.status = 'failed';
             }
 
-            // 🧩 Actualizar el historial académico correspondiente
             await this.historyRepo.update(
                 {
                     user: { id: userId },
@@ -89,7 +84,6 @@ export class GradesService {
         return this.gradeRepo.save(grade);
     }
 
-    // 🧩 Obtener notas de un alumno en una comisión específica
     async findByUserAndCommission(userId: string, commissionId: string) {
         const grade = await this.gradeRepo.findOne({
             where: { user: { id: userId }, commission: { id: commissionId } },

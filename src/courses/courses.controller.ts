@@ -30,6 +30,4 @@ findAvailableCourses(@Query('userId') userId: string) {
   create(@Body() dto: CreateCourseDto) {
     return this.coursesService.create(dto);
   }
-
-  
 }

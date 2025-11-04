@@ -7,7 +7,6 @@ export class Career {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-
     @Column()
     name: string;
 

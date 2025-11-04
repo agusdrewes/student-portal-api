@@ -33,7 +33,7 @@ export class AcademicHistory {
   year: string;
 
   @Column({ type: 'varchar', nullable: true })
-  finalNote: string | null; // ✅ importante: permitir null
+  finalNote: string | null;
 
   @Column({ default: 'in_progress' })
   status: 'in_progress' | 'passed' | 'failed';

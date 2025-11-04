@@ -14,9 +14,8 @@ export class AttendanceService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(Commission)
     private readonly commissionRepo: Repository<Commission>,
-  ) {}
+  ) { }
 
-  // ✅ Registrar asistencia
   async markAttendance(userId: string, commissionId: string, present: boolean, date?: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const commission = await this.commissionRepo.findOne({ where: { id: commissionId } });
@@ -45,7 +44,6 @@ export class AttendanceService {
     return this.attendanceRepo.save(attendance);
   }
 
-  // ✅ Obtener asistencias de un alumno en una comisión
   async getUserAttendance(userId: string, commissionId: string) {
     return this.attendanceRepo.find({
       where: { user: { id: userId }, commission: { id: commissionId } },
@@ -53,7 +51,6 @@ export class AttendanceService {
     });
   }
 
-  // ✅ Obtener asistencia general de una comisión
   async getCommissionAttendance(commissionId: string) {
     return this.attendanceRepo.find({
       where: { commission: { id: commissionId } },

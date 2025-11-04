@@ -4,7 +4,6 @@ import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 import { AcademicHistory } from '../../academic-history/entities/academic-history.entity';
 import { Career } from '../../career/entities/career.entity';
 
-
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn('uuid')
@@ -19,7 +18,6 @@ export class Course {
   @Column({ nullable: true })
   description?: string;
 
-  // correlativas: lista de IDs de otros cursos
   @Column('uuid', { array: true, default: [] })
   correlates: string[];
 
@@ -34,6 +32,5 @@ export class Course {
 
   @ManyToMany(() => Career, (career) => career.courses)
   careers: Career[];
-
 
 }

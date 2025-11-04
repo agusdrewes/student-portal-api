@@ -22,7 +22,7 @@ export class Attendance {
   commission: Commission;
 
   @Column({ type: 'date' })
-  date: string; // YYYY-MM-DD
+  date: string;
 
   @Column({ default: false })
   present: boolean;

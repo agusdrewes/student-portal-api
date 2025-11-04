@@ -12,9 +12,8 @@ export class PurchasesService {
     private readonly purchaseRepo: Repository<Purchase>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-  ) {}
+  ) { }
 
-  // ✅ Crear una nueva compra
   async create(userId: string, dto: CreatePurchaseDto) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -28,7 +27,6 @@ export class PurchasesService {
     return this.purchaseRepo.save(purchase);
   }
 
-  // ✅ Obtener todas las compras de un usuario
   async findByUser(userId: string) {
     const purchases = await this.purchaseRepo.find({
       where: { user: { id: userId } },

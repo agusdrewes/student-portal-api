@@ -11,9 +11,8 @@ export class NotificationsService {
     private readonly notificationRepo: Repository<Notification>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-  ) {}
+  ) { }
 
-  // ✅ Obtener las últimas 10 notificaciones
   async getLatest(userId: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -25,7 +24,6 @@ export class NotificationsService {
     });
   }
 
-  // ✅ Obtener solo las no leídas
   async getUnread(userId: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -36,7 +34,6 @@ export class NotificationsService {
     });
   }
 
-  // ✅ Crear notificación (puede usarse desde otros servicios)
   async create(userId: string, title: string, message: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -49,7 +46,6 @@ export class NotificationsService {
     return this.notificationRepo.save(notification);
   }
 
-  // ✅ Marcar como leída
   async markAsRead(notificationId: string) {
     const notif = await this.notificationRepo.findOne({ where: { id: notificationId } });
     if (!notif) throw new NotFoundException('Notification not found');

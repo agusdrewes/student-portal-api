@@ -30,7 +30,7 @@ export class EnrollmentsService {
     private commissionRepo: Repository<Commission>,
     @InjectRepository(AcademicHistory)
     private historyRepo: Repository<AcademicHistory>,
-    private readonly gradesService: GradesService, // ✅
+    private readonly gradesService: GradesService,
 
   ) { }
 
@@ -45,9 +45,7 @@ export class EnrollmentsService {
       throw new NotFoundException('Invalid enrollment data');
     }
 
-    // 🧩 1️⃣ Validar correlativas
     if (course.correlates && course.correlates.length > 0) {
-      // Buscar el historial académico del usuario para esas correlativas
       const histories = await this.historyRepo.find({
         where: {
           user: { id: userId },
@@ -56,12 +54,10 @@ export class EnrollmentsService {
         relations: ['course'],
       });
 
-      // Obtener IDs de correlativas aprobadas
       const approvedIds = histories
         .filter((h) => h.status === 'passed')
         .map((h) => h.course.id);
 
-      // Ver cuáles faltan aprobar
       const missing = course.correlates.filter((id) => !approvedIds.includes(id));
 
       if (missing.length > 0) {
@@ -76,12 +72,10 @@ export class EnrollmentsService {
       }
     }
 
-    // 🧩 2️⃣ Validar cupos
     if (commission.availableSpots <= 0) {
       throw new BadRequestException('No available spots');
     }
 
-    // 🧩 3️⃣ Evitar doble inscripción
     const existingEnrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },
     });
@@ -89,13 +83,11 @@ export class EnrollmentsService {
       throw new BadRequestException('User already enrolled in this commission');
     }
 
-    // 🧩 4️⃣ Crear inscripción
     const enrollment = this.enrollmentRepo.create({ user, course, commission });
     commission.availableSpots -= 1;
     await this.commissionRepo.save(commission);
     await this.enrollmentRepo.save(enrollment);
 
-    // 🧩 5️⃣ Crear historial académico inicial
     const currentYear = new Date().getFullYear().toString();
     const currentSemester = new Date().getMonth() < 6 ? '1C' : '2C';
 
@@ -138,7 +130,6 @@ export class EnrollmentsService {
   }
 
 
-  // ✅ Retirarse de una comisión (y borrar el registro de historial si sigue en progreso)
   async withdraw(userId: string, commissionId: string) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },
@@ -150,7 +141,6 @@ export class EnrollmentsService {
     enrollment.commission.availableSpots += 1;
     await this.commissionRepo.save(enrollment.commission);
 
-    // Borrar historial académico si todavía está "in_progress"
     await this.historyRepo.delete({
       user: { id: userId },
       course: { id: enrollment.course.id },
@@ -161,7 +151,6 @@ export class EnrollmentsService {
     return { message: 'Successfully withdrawn and academic history removed' };
   }
 
-  // ✅ Ver todos los cursos/comisiones de un usuario
   async findByUser(userId: string) {
     if (!userId || !isUuid(userId)) {
       throw new BadRequestException('Invalid userId');
@@ -176,14 +165,12 @@ export class EnrollmentsService {
       throw new NotFoundException('No enrollments found for this user');
     }
 
-    // ✅ Traemos también commission
     const histories = await this.historyRepo.find({
       where: { user: { id: userId } },
       relations: ['course', 'commission'],
     });
 
     return enrollments.map((enr) => {
-      // ✅ Ahora comparamos por commission.id, no por course.id
       const relatedHistory = histories.find(
         (h) => h.commission?.id === enr.commission?.id
       );

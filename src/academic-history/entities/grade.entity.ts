@@ -10,7 +10,7 @@ export class Grade {
   enrollment: Enrollment;
 
   @Column({ nullable: true })
-  semester: string; // '1C' o '2C'
+  semester: string; 
 
   @Column({ nullable: true })
   year: string;

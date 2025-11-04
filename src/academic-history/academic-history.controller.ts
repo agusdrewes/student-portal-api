@@ -5,13 +5,11 @@ import { AcademicHistoryService } from './academic-history.service';
 export class AcademicHistoryController {
   constructor(private readonly academicHistoryService: AcademicHistoryService) {}
 
-  // ✅ Ver historial completo de un alumno
   @Get(':userId')
   getUserHistory(@Param('userId') userId: string) {
     return this.academicHistoryService.getUserHistory(userId);
   }
 
-  // ✅ Actualizar nota final y estado (aprobado/desaprobado)
   @Patch(':userId/courses/:courseId')
   updateGrade(
     @Param('userId') userId: string,

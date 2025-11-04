@@ -11,7 +11,7 @@ export class CareerService {
     private readonly careerRepo: Repository<Career>,
     @InjectRepository(Course)
     private readonly courseRepo: Repository<Course>,
-  ) {}
+  ) { }
 
   async findAll() {
     return this.careerRepo.find({ relations: ['courses'] });
@@ -34,7 +34,6 @@ export class CareerService {
 
     if (!career || !course) throw new NotFoundException('Career or Course not found');
 
-    // 🚫 Evitar duplicados
     const alreadyExists = career.courses.some((c) => c.id === course.id);
     if (alreadyExists) {
       throw new BadRequestException('Course already assigned to this career');

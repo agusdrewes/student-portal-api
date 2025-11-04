@@ -12,9 +12,8 @@ export class CommissionService {
     private commissionRepo: Repository<Commission>,
     @InjectRepository(Course)
     private courseRepo: Repository<Course>,
-  ) {}
+  ) { }
 
-  // 🔹 Determina si una comisión es futura, en progreso o pasada
   private getCommissionStatus(startDate: string, endDate: string): 'future' | 'in_progress' | 'past' {
     const today = new Date();
     const start = new Date(startDate);
@@ -28,31 +27,28 @@ export class CommissionService {
   async findByCourseWithStatus(courseId: string, status?: 'future' | 'in_progress' | 'past') {
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
-  
+
     const commissions = await this.commissionRepo.find({ where: { course: { id: courseId } } });
-  
+
     const result = commissions.map((c) => ({
       ...c,
       status: this.getCommissionStatus(c.startDate, c.endDate),
     }));
-  
+
     return status ? result.filter((c) => c.status === status) : result;
   }
-  
-
 
   async findByCourse(courseId: string) {
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
-  
+
     const commissions = await this.commissionRepo.find({ where: { course: { id: courseId } } });
-  
+
     return commissions.map((c) => ({
       ...c,
       status: this.getCommissionStatus(c.startDate, c.endDate),
     }));
   }
-  
 
   async create(courseId: string, dto: CreateCommissionDto) {
     const course = await this.courseRepo.findOne({ where: { id: courseId } });

@@ -21,6 +21,4 @@ export class Enrollment {
   })
   @JoinColumn({ name: 'commissionId' })
   commission: Commission;
-
-  
 }
