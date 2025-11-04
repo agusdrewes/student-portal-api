@@ -5,6 +5,7 @@ import { AcademicHistoryService } from './academic-history.service';
 export class AcademicHistoryController {
   constructor(private readonly academicHistoryService: AcademicHistoryService) {}
 
+  
   @Get(':userId')
   getUserHistory(@Param('userId') userId: string) {
     return this.academicHistoryService.getUserHistory(userId);

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 
-@Controller('users/:userId/notifications')
+@Controller('/notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) { }
 
@@ -17,11 +17,8 @@ export class NotificationsController {
   }
 
   @Post()
-  create(
-    @Param('userId') userId: string,
-    @Body() dto: Omit<CreateNotificationDto, 'userId'>,
-  ) {
-    return this.notificationsService.create(userId, dto.title, dto.message);
+  create(@Body() dto: CreateNotificationDto) {
+    return this.notificationsService.create(dto);
   }
 
   @Patch(':notificationId/read')

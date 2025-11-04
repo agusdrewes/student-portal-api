@@ -13,6 +13,7 @@ import { CareerModule } from './career/career.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -27,7 +28,8 @@ import { AttendanceModule } from './attendance/attendance.module';
     CareerModule,
     PurchasesModule, 
     NotificationsModule,
-    AttendanceModule
+    AttendanceModule,
+    AuthModule
   ],
 })
 export class AppModule {}

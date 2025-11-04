@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { Notification } from './entities/notifications.entity';
+import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -34,17 +35,25 @@ export class NotificationsService {
     });
   }
 
-  async create(userId: string, title: string, message: string) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
+  async create(dto: CreateNotificationDto) {
+  const { userId, title, message, type } = dto;
 
-    const notification = this.notificationRepo.create({
-      user,
-      title,
-      message,
-    });
-    return this.notificationRepo.save(notification);
-  }
+  const user = await this.userRepo.findOne({ where: { id: userId } });
+  if (!user) throw new NotFoundException('User not found');
+
+  const notification: Partial<Notification> = {
+    user,
+    title,
+    message,
+    type,
+    isRead: false, // ✅ nombre correcto según tu entidad
+  };
+
+  return this.notificationRepo.save(notification);
+}
+
+
+
 
   async markAsRead(notificationId: string) {
     const notif = await this.notificationRepo.findOne({ where: { id: notificationId } });
