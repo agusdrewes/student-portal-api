@@ -1,5 +1,6 @@
-import { Controller, Post, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
+import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
 
 @Controller('attendances')
 export class AttendanceController {
@@ -19,6 +20,7 @@ export class AttendanceController {
     );
   }
 
+  @UseGuards(JwtDecodeGuard)
   @Get(':commissionId/:userId')
   getUserAttendance(
     @Param('userId') userId: string,

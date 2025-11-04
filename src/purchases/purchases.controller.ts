@@ -1,6 +1,7 @@
-import { Controller, Post, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
 
 @Controller('users/:userId/purchases')
 export class PurchasesController {
@@ -14,6 +15,7 @@ export class PurchasesController {
     return this.purchasesService.create(userId, dto);
   }
 
+  @UseGuards(JwtDecodeGuard)
   @Get()
   findAll(@Param('userId') userId: string) {
     return this.purchasesService.findByUser(userId);
