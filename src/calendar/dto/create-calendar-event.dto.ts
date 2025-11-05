@@ -4,11 +4,13 @@ import {
   IsNotEmpty,
   IsISO8601,
   IsOptional,
-  IsInt,
 } from 'class-validator';
-import { EventType } from '../entities/calendar-event.entity';
 
 export class CreateCalendarEventDto {
+  @IsString()
+  @IsNotEmpty()
+  id: string; // ahora obligatorio y debe ser string
+
   @IsString()
   @IsNotEmpty()
   title: string;
@@ -23,13 +25,31 @@ export class CreateCalendarEventDto {
   @IsISO8601()
   endDateTime: string;
 
-  @IsEnum(EventType)
-  eventType: EventType;
+  @IsString()
+  @IsOptional()
+  eventType?: string;
 
   @IsISO8601()
-  date: string;
-
   @IsOptional()
+  date?: string;
+
   @IsString()
-  userId?: string; 
+  @IsOptional()
+  sourceModule?: string;
+
+  @IsString()
+  @IsOptional()
+  eventStatus?: string;
+
+  @IsISO8601()
+  @IsOptional()
+  createdAt?: string;
+
+  @IsISO8601()
+  @IsOptional()
+  updatedAt?: string; // 👈 ya aceptado
+
+  @IsString()
+  @IsOptional()
+  userId?: string;
 }

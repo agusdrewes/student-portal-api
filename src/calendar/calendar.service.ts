@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CalendarEvent } from './entities/calendar-event.entity';
+import { IsNull, Repository } from 'typeorm';
+import { CalendarEvent, EventType } from './entities/calendar-event.entity';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { User } from '../user/entities/user.entity';
 
@@ -38,15 +38,23 @@ export class CalendarService {
   async findByUser(userId: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
-
+  
+    // Trae eventos personales O globales (sin userId)
     const events = await this.calendarRepository.find({
-      where: { user: { id: userId } },
+      where: [
+        { user: { id: userId } }, // eventos personales
+        { user: IsNull() },           // eventos generales
+      ],
       order: { date: 'ASC' },
+      relations: ['user'],
     });
-
-    if (!events.length) throw new NotFoundException('No events found for this user');
+  
+    if (!events.length)
+      throw new NotFoundException('No events found for this user');
+  
     return events;
   }
+  
 
   async create(dto: CreateCalendarEventDto) {
     const event = this.calendarRepository.create(dto);
@@ -65,9 +73,9 @@ export class CalendarService {
     return this.calendarRepository.save(event);
   }
 
-  async delete(id: string) {
+  async cancel(id: string) {
     const event = await this.findOne(id);
-    await this.calendarRepository.remove(event);
-    return { deleted: true };
+    event.eventType = EventType.Cancelled;
+    return this.calendarRepository.save(event);
   }
 }
