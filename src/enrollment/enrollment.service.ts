@@ -13,12 +13,16 @@ import { Commission } from '../commission/entities/commission.entity';
 import { AcademicHistory } from '../academic-history/entities/academic-history.entity';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { validate as isUuid } from 'uuid';
-import { start } from 'repl';
 import { GradesService } from '../grades/grades.service';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
+import { Logger } from '@nestjs/common';
 
 
 @Injectable()
 export class EnrollmentsService {
+  private readonly HUB_URL = process.env.HUB_URL || 'http://localhost:3001';
+  private readonly logger = new Logger(EnrollmentsService.name)
   constructor(
     @InjectRepository(Enrollment)
     private enrollmentRepo: Repository<Enrollment>,
@@ -31,8 +35,34 @@ export class EnrollmentsService {
     @InjectRepository(AcademicHistory)
     private historyRepo: Repository<AcademicHistory>,
     private readonly gradesService: GradesService,
+    private readonly httpService: HttpService,
 
   ) { }
+
+  private async sendEnrollmentEventToHub(
+    userId: string,
+    courseId: string,
+    commissionId: string,
+    action: 'update' | 'delete' = 'update'
+  ) {
+    const payload = {
+      userId,
+      courseId,
+      commissionId,
+      date: new Date().toISOString(),
+      action,
+    };
+
+    const endpoint = `${this.HUB_URL}/events/courses.commission.enrollment.updated`;
+
+    try {
+      await lastValueFrom(this.httpService.post(endpoint, payload));
+      this.logger.log(`Evento enviado al Hub → ${endpoint}`);
+    } catch (err) {
+      this.logger.error(`Error enviando evento al Hub: ${err.message}`);
+      // opcional: guardalo en una tabla local para reintentar más tarde
+    }
+  }
 
   async enroll(dto: CreateEnrollmentDto) {
     const { userId, courseId, commissionId } = dto;
@@ -102,6 +132,7 @@ export class EnrollmentsService {
     });
     await this.historyRepo.save(history);
     await this.gradesService.createInitial(user.id, commission.id);
+    await this.sendEnrollmentEventToHub(dto.userId, dto.courseId, dto.commissionId, 'update');
 
 
     return {
@@ -127,6 +158,7 @@ export class EnrollmentsService {
         status: history.status,
       },
     }
+
   }
 
 
@@ -148,7 +180,9 @@ export class EnrollmentsService {
     });
 
     await this.enrollmentRepo.remove(enrollment);
+    await this.sendEnrollmentEventToHub(userId, enrollment.course.id, commissionId, 'delete');
     return { message: 'Successfully withdrawn and academic history removed' };
+
   }
 
   async findByUser(userId: string) {
@@ -231,4 +265,6 @@ export class EnrollmentsService {
         : null,
     };
   }
+
+
 }

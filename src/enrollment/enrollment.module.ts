@@ -8,9 +8,11 @@ import { Course } from '../courses/entities/course.entity';
 import { Commission } from '../commission/entities/commission.entity';
 import { AcademicHistory } from '../academic-history/entities/academic-history.entity';
 import { GradesModule } from 'src/grades/grades.module';
+import { HttpModule } from '@nestjs/axios';
+
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Enrollment, User, Course, Commission, AcademicHistory]), GradesModule],
+  imports: [TypeOrmModule.forFeature([Enrollment, User, Course, Commission, AcademicHistory]), GradesModule, HttpModule],
   controllers: [EnrollmentsController],
   providers: [EnrollmentsService],
 })
