@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, PrimaryColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 
 export enum EventType {
@@ -6,11 +6,13 @@ export enum EventType {
   Exam = 'exam',
   Extracurricular = 'extracurricular',
   Evento = 'evento',
+  Cancelled = 'cancelled',
+
 }
 
 @Entity('calendar_events')
 export class CalendarEvent {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id: string;
 
   @Column()
@@ -25,8 +27,20 @@ export class CalendarEvent {
   @Column({ type: 'timestamp' })
   endDateTime: Date;
 
-  @Column({ type: 'enum', enum: EventType })
-  eventType: EventType;
+  @Column({ nullable: true })
+  eventType: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
+
+  @Column({ nullable: true })
+  sourceModule?: string; // quién lo emitió (Eventos, Estudiantes, etc.)
+
+  @Column({ nullable: true })
+  eventStatus?: string; // active, cancelled, etc.
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   user?: User;

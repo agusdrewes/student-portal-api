@@ -37,8 +37,9 @@ export class CalendarController {
     return this.service.update(String(id), body);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.service.delete(String(id));
-  }
+  @Put(':id/cancel')
+cancel(@Param('id') id: string) {
+  return this.service.cancel(id);
+}
+
 }
