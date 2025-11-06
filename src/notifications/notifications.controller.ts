@@ -1,21 +1,23 @@
-import { Controller, Get, Post, Body, Param, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
 
 @Controller('/notifications')
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) { }
+  constructor(private readonly notificationsService: NotificationsService) {}
 
+  // ✅ Usa query string en lugar de /unread
   @UseGuards(JwtDecodeGuard)
   @Get()
-  getLatest(@Param('userId') userId: string) {
+  getNotifications(
+    @Query('userId') userId: string,
+    @Query('status') status?: string
+  ) {
+    if (status === 'unread') {
+      return this.notificationsService.getUnread(userId);
+    }
     return this.notificationsService.getLatest(userId);
-  }
-
-  @Get('unread')
-  getUnread(@Param('userId') userId: string) {
-    return this.notificationsService.getUnread(userId);
   }
 
   @Post()
@@ -24,8 +26,11 @@ export class NotificationsController {
   }
 
   @UseGuards(JwtDecodeGuard)
-  @Patch(':notificationId/read')
-  markAsRead(@Param('notificationId') id: string) {
-    return this.notificationsService.markAsRead(id);
+  @Patch(':id')
+  updateNotification(
+    @Param('id') id: string,
+    @Body() body: { read?: boolean }
+  ) {
+    return this.notificationsService.update(id, body);
   }
 }

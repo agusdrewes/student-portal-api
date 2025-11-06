@@ -36,30 +36,35 @@ export class NotificationsService {
   }
 
   async create(dto: CreateNotificationDto) {
-  const { userId, title, message, type } = dto;
+    const { userId, title, message, type } = dto;
 
-  const user = await this.userRepo.findOne({ where: { id: userId } });
-  if (!user) throw new NotFoundException('User not found');
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
 
-  const notification: Partial<Notification> = {
-    user,
-    title,
-    message,
-    type,
-    isRead: false, // ✅ nombre correcto según tu entidad
-  };
+    const notification: Partial<Notification> = {
+      user,
+      title,
+      message,
+      type,
+      isRead: false, 
+    };
 
-  return this.notificationRepo.save(notification);
-}
-
-
-
-
-  async markAsRead(notificationId: string) {
-    const notif = await this.notificationRepo.findOne({ where: { id: notificationId } });
-    if (!notif) throw new NotFoundException('Notification not found');
-
-    notif.isRead = true;
-    return this.notificationRepo.save(notif);
+    return this.notificationRepo.save(notification);
   }
+
+  async update(id: string, body: { read?: boolean }) {
+    const notification = await this.notificationRepo.findOne({ where: { id } });
+    if (!notification) throw new NotFoundException('Notification not found');
+
+    if (body.read !== undefined) {
+      notification.isRead = body.read;
+    }
+
+    return this.notificationRepo.save(notification);
+  }
+
+
+
+
+
 }

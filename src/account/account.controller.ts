@@ -14,7 +14,7 @@ export class AccountController {
   }
 
   @UseGuards(JwtDecodeGuard)
-  @Post(':userId/deposit')
+  @Post(':userId/transactions')
   deposit(@Param('userId') userId: string, @Body() dto: DepositDto) {
     return this.accountService.deposit(String(userId), dto);
   }
