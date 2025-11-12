@@ -52,19 +52,14 @@ export class NotificationsService {
     return this.notificationRepo.save(notification);
   }
 
-  async update(id: string, body: { read?: boolean }) {
-    const notification = await this.notificationRepo.findOne({ where: { id } });
-    if (!notification) throw new NotFoundException('Notification not found');
+  async update(id: string, body: { isRead?: boolean }) {
+  const notification = await this.notificationRepo.findOne({ where: { id } });
+  if (!notification) throw new NotFoundException('Notification not found');
 
-    if (body.read !== undefined) {
-      notification.isRead = body.read;
-    }
-
-    return this.notificationRepo.save(notification);
+  if (body.isRead !== undefined) {
+    notification.isRead = body.isRead;
   }
 
-
-
-
-
+  return this.notificationRepo.save(notification);
+}
 }

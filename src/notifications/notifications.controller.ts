@@ -26,10 +26,10 @@ export class NotificationsController {
   }
 
   @UseGuards(JwtDecodeGuard)
-  @Patch(':id')
-  updateNotification(
-    @Param('id') id: string,
-    @Body() body: { read?: boolean }
+   @Patch(':notificationId')
+  update(
+    @Param('notificationId') id: string,
+    @Body() body: { isRead?: boolean },
   ) {
     return this.notificationsService.update(id, body);
   }
