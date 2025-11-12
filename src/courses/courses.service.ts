@@ -17,16 +17,15 @@ export class CoursesService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-  ) { }
+  ) {}
 
+  // ✅ Traer todos los cursos
   async findAll() {
     const courses = await this.courseRepo.find({
       relations: ['commissions', 'careers'],
     });
 
-    if (!courses.length) {
-      throw new NotFoundException('No courses found');
-    }
+    if (!courses.length) throw new NotFoundException('No courses found');
 
     return courses.map((c) => ({
       id: c.id,
@@ -38,25 +37,22 @@ export class CoursesService {
     }));
   }
 
-
+  // ✅ Traer curso por ID
   async findOne(id: string) {
     if (!id || !isUuid(id)) {
-      console.warn('⚠️ findOne() recibió un ID inválido (NaN o null):', id);
-      return null;
+      console.warn('⚠️ findOne() recibió un ID inválido:', id);
+      throw new BadRequestException('Invalid course ID');
     }
-
 
     const course = await this.courseRepo.findOne({
       where: { id },
       relations: ['commissions', 'careers'],
     });
 
-    if (!course) {
-      throw new NotFoundException(`Course with ID ${id} not found`);
-    }
+    if (!course) throw new NotFoundException(`Course with ID ${id} not found`);
 
     const validCorrelates = (course.correlates || []).filter(
-      (id) => typeof id === 'string' && !isUuid(id)
+      (id) => typeof id === 'string' && isUuid(id),
     );
 
     const correlatives =
@@ -76,20 +72,21 @@ export class CoursesService {
       correlatives: correlatives.map((c) => ({
         id: c.id,
         name: c.name,
+        code: c.code,
       })),
       commissions: course.commissions || [],
     };
   }
 
+  // ✅ Cursos por carrera del usuario autenticado
   async findCoursesForUser(userId: string) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
       relations: ['career'],
     });
 
-    if (!user || !user.career) {
+    if (!user || !user.career)
       throw new NotFoundException('User or career not found');
-    }
 
     const courses = await this.courseRepo
       .createQueryBuilder('course')
@@ -98,14 +95,13 @@ export class CoursesService {
       .leftJoinAndSelect('course.commissions', 'commission')
       .getMany();
 
-    if (!courses.length) {
+    if (!courses.length)
       throw new NotFoundException('No courses found for this career');
-    }
 
     return Promise.all(
       courses.map(async (c) => {
         const validCorrelates = (c.correlates || []).filter(
-          (id) => typeof id === 'string' && !isUuid(id)
+          (id) => typeof id === 'string' && isUuid(id),
         );
 
         const correlatives =
@@ -128,25 +124,24 @@ export class CoursesService {
     );
   }
 
-
+  // ✅ Crear nuevo curso
   async create(courseData: Partial<Course>) {
-    if (!courseData.name || !courseData.code) {
+    if (!courseData.name || !courseData.code)
       throw new BadRequestException('Missing course name or code');
-    }
 
     const course = this.courseRepo.create(courseData);
     return this.courseRepo.save(course);
   }
 
+  // ✅ Cursos disponibles para el usuario (según historial)
   async findAvailableCoursesForUser(userId: string) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
       relations: ['career'],
     });
 
-    if (!user || !user.career) {
+    if (!user || !user.career)
       throw new NotFoundException('User or career not found');
-    }
 
     const allCourses = await this.courseRepo
       .createQueryBuilder('course')
@@ -170,58 +165,72 @@ export class CoursesService {
       .filter((h) => h.status === 'in_progress')
       .map((h) => h.course.id);
 
-
     const availableCourses = allCourses.filter((course) => {
       const alreadyApproved = approvedIds.includes(course.id);
-      const validCorrelates = (course.correlates || [])
-        .map((id) => String(id))
-        .filter((id) => !isUuid(id));
+      const validCorrelates = (course.correlates || []).filter(
+        (id) => typeof id === 'string' && isUuid(id),
+      );
 
       const pendingCorrelatives = validCorrelates.some(
         (corrId) => !approvedIds.includes(corrId),
       );
 
       if (inProgressIds.includes(course.id)) return true;
-
       return !alreadyApproved && !pendingCorrelatives;
     });
 
     const today = new Date();
 
-    return availableCourses.map((c) => {
-      let status = 'available';
-      if (approvedIds.includes(c.id)) status = 'passed';
-      else if (inProgressIds.includes(c.id)) status = 'in_progress';
+    return Promise.all(
+      availableCourses.map(async (c) => {
+        const validCorrelates = (c.correlates || []).filter(
+          (id) => typeof id === 'string' && isUuid(id),
+        );
 
-      const futureCommissions =
-        (c.commissions || []).filter((comm) => {
-          const start = new Date(comm.startDate);
-          return start > today;
-        }) || [];
+        const correlatives =
+          validCorrelates.length > 0
+            ? await this.courseRepo.find({ where: { id: In(validCorrelates) } })
+            : [];
 
-      return {
-        id: c.id,
-        code: c.code,
-        name: c.name,
-        description: c.description,
-        correlates: c.correlates,
-        status,
-        commissions:
-          status === 'available' ? futureCommissions.map((comm) => ({
-            id: comm.id,
-            days: comm.days,
-            shift: comm.shift,
-            mode: comm.mode,
-            startTime: comm.startTime,
-            endTime: comm.endTime,
-            classRoom: comm.classRoom,
-            professorName: comm.professorName,
-            availableSpots: comm.availableSpots,
-            totalSpots: comm.totalSpots,
-            startDate: comm.startDate,
-            endDate: comm.endDate,
-          })) : [],
-      };
-    });
+        let status = 'available';
+        if (approvedIds.includes(c.id)) status = 'passed';
+        else if (inProgressIds.includes(c.id)) status = 'in_progress';
+
+        const futureCommissions =
+          (c.commissions || []).filter((comm) => {
+            const start = new Date(comm.startDate);
+            return start > today;
+          }) || [];
+
+        return {
+          id: c.id,
+          code: c.code,
+          name: c.name,
+          description: c.description,
+          correlatives: correlatives.map((corr) => ({
+            id: corr.id,
+            name: corr.name,
+          })),
+          status,
+          commissions:
+            status === 'available'
+              ? futureCommissions.map((comm) => ({
+                  id: comm.id,
+                  days: comm.days,
+                  shift: comm.shift,
+                  mode: comm.mode,
+                  startTime: comm.startTime,
+                  endTime: comm.endTime,
+                  classRoom: comm.classRoom,
+                  professorName: comm.professorName,
+                  availableSpots: comm.availableSpots,
+                  totalSpots: comm.totalSpots,
+                  startDate: comm.startDate,
+                  endDate: comm.endDate,
+                }))
+              : [],
+        };
+      }),
+    );
   }
 }
