@@ -1,31 +1,30 @@
-# ---- Etapa 1: Build ----
+# ---- Stage 1: Build ----
 FROM node:20-alpine AS build
 
 RUN apk add --no-cache python3 make g++ bash
 WORKDIR /app
 
+# Copiar todo (no solo algunos archivos)
 COPY package*.json ./
-RUN npm ci
-
 COPY tsconfig*.json ./
 COPY nest-cli.json ./
+COPY ormconfig.ts ./
 COPY src ./src
 
-# 👉 COMPILAR A /app/dist
+RUN npm ci
+
+# Compilar el proyecto (genera /app/dist/src/main.js)
 RUN npm run build
 
 
-# ---- Etapa 2: Runtime ----
+# ---- Stage 2: Runtime ----
 FROM node:20-alpine
-
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# 👉 Copiar el build correcto
+# Copiar todo el build generado
 COPY --from=build /app/dist ./dist
 
-# 👉 ***ESTE ES EL PUNTO CRÍTICO***
-# Railway debe ejecutar el archivo QUE SÍ EXISTE:
 CMD ["node", "dist/src/main.js"]
