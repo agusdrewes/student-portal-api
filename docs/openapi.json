@@ -2,151 +2,43 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Student Portal API",
-    "version": "1.0.0",
-    "description": "API documentation for the Student Portal."
+    "version": "1.1.0",
+    "description": "Up-to-date OpenAPI specification for the Student Portal backend."
   },
-  "tags": [
+  "servers": [
     {
-      "name": "Calendar",
-      "description": "Operations related to the academic calendar."
-    },
-    {
-      "name": "Courses",
-      "description": "Operations related to courses and commissions."
-    },
-    {
-      "name": "Account",
-      "description": "Operations related to user account management."
-    },
-    {
-      "name": "Purchases",
-      "description": "Operations related to user purchases."
-    },
-    {
-      "name": "AcademicHistory",
-      "description": "Operations related to the user's academic history."
-    },
-    {
-      "name": "Notifications",
-      "description": "Operations related to user notifications."
-    },
-    {
-      "name": "EXTERNAL ENDPOINTS",
-      "description": "Endpoints intended for external integrations."
+      "url": "http://localhost:3000",
+      "description": "Local development"
     }
   ],
+  "tags": [
+    { "name": "App", "description": "Root endpoints and health checks." },
+    { "name": "Users", "description": "User management and course overview." },
+    { "name": "Courses", "description": "Courses catalog and availability." },
+    { "name": "Commissions", "description": "Commissions per course." },
+    { "name": "Enrollments", "description": "Course enrollment lifecycle." },
+    { "name": "Calendar", "description": "Academic calendar events." },
+    { "name": "Notifications", "description": "In-app notifications." },
+    { "name": "Account", "description": "Student account and transactions." },
+    { "name": "Attendance", "description": "Commission attendance records." },
+    { "name": "Purchases", "description": "Store purchases." },
+    { "name": "AcademicHistory", "description": "Academic history records." },
+    { "name": "Grades", "description": "Grade tracking." },
+    { "name": "Careers", "description": "Careers and curriculum." }
+  ],
   "paths": {
-    "/external/account/deposit": {
-      "post": {
-        "tags": ["EXTERNAL ENDPOINTS"],
-        "summary": "Deposit money into account (external)",
-        "description": "Deposit a specified amount into the user's account using a credit/debit card via an external integration.",
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Full name of the account holder",
-                    "example": "John Doe"
-                  },
-                  "amount": {
-                    "type": "string",
-                    "description": "Amount to deposit (numeric string with 2 decimals)",
-                    "example": "2999.99"
-                  },
-                  "cardNumber": {
-                    "type": "string",
-                    "description": "Card number (16 digits)",
-                    "pattern": "^\\d{16}$",
-                    "example": "1234567812345678"
-                  },
-                  "expiration": {
-                    "type": "string",
-                    "description": "Card expiration date (MM/YY)",
-                    "pattern": "^(0[1-9]|1[0-2])\\/(\\d{2})$",
-                    "example": "12/27"
-                  },
-                  "cvv": {
-                    "type": "string",
-                    "description": "Card CVV (3 or 4 digits)",
-                    "pattern": "^\\d{3,4}$",
-                    "example": "123"
-                  }
-                },
-                "required": ["amount", "cardNumber", "expiration", "cvv"]
-              }
-            }
-          }
-        },
+    "/": {
+      "get": {
+        "tags": ["App"],
+        "summary": "API heartbeat",
         "responses": {
           "200": {
-            "description": "New account balance after deposit",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AccountBalanceDto" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/external/email/send": {
-      "post": {
-        "tags": ["EXTERNAL ENDPOINTS"],
-        "summary": "Send email (external)",
-        "description": "Send an email with subject and body content via an external integration.",
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "subject": {
-                    "type": "string",
-                    "description": "Email subject line",
-                    "example": "Important Update"
-                  },
-                  "htmlBody": {
-                    "type": "string",
-                    "description": "HTML email body content",
-                    "example": "<h1>Hello</h1><p>This is an important update.</p>"
-                  },
-                  "txtBody": {
-                    "type": "string",
-                    "description": "Plain text email body content",
-                    "example": "Hello\n\nThis is an important update."
-                  }
-                },
-                "required": ["subject", "htmlBody", "txtBody"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email sent successfully",
+            "description": "Returns the default hello message",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Email sent successfully"
-                    }
-                  },
-                  "required": ["success", "message"]
+                  "properties": { "message": { "type": "string", "example": "Hello World!" } }
                 }
               }
             }
@@ -154,181 +46,171 @@
         }
       }
     },
-    
-    "/calendar": {
+    "/users": {
       "get": {
-        "tags": ["Calendar"],
-        "summary": "Get calendar events",
-        "description": "Returns a list of events (cafeteria, exam, etc.) for the specified date range.",
-        "parameters": [
-          {
-            "name": "startDate",
-            "in": "query",
-            "description": "Start date in YYYY-MM-DD format (defaults to first day of current month)",
-            "required": false,
-            "schema": { "type": "string", "format": "date" }
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "description": "End date in YYYY-MM-DD format (defaults to last day of next month)",
-            "required": false,
-            "schema": { "type": "string", "format": "date" }
-          }
-        ],
-        "security": [{ "bearerAuth": [] }],
+        "tags": ["Users"],
+        "summary": "List users",
         "responses": {
           "200": {
-            "description": "A list of calendar events",
+            "description": "Array of registered users",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "description": "Unique identifier for the calendar event"
-                      },
-                      "startDateTime": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "endDateTime": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "eventType": {
-                        "type": "string",
-                        "enum": ["cafeteria", "exam", "extracurricular"]
-                      },
-                      "title": {
-                        "type": "string",
-                        "description": "Title of the event",
-                        "example": "Lunch"
-                      },
-                      "description": {
-                        "type": "string",
-                        "description": "Detailed description of the event",
-                        "example": "Lunch break in the cafeteria."
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "startDateTime",
-                      "endDateTime",
-                      "eventType",
-                      "title",
-                      "description"
-                    ]
-                  }
-                }
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create user",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateUserDto" } } }
+        },
+        "responses": {
+          "201": {
+            "description": "Created user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
               }
             }
           }
         }
       }
     },
-    "/calendar/{id}": {
+    "/users/{userId}/courses": {
       "get": {
-        "tags": ["Calendar"],
-        "summary": "Get a calendar event by ID",
+        "tags": ["Users"],
+        "summary": "Courses assigned to a user",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
-        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Calendar event details",
+            "description": "User with enrolled courses",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "string" },
-                    "eventDateTime": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "eventType": {
-                      "type": "string",
-                      "enum": ["cafeteria", "exam"]
-                    },
-                    "title": { "type": "string" },
-                    "description": { "type": "string" }
-                  },
-                  "required": [
-                    "id",
-                    "eventDateTime",
-                    "eventType",
-                    "title",
-                    "description"
-                  ]
-                }
+                "schema": { "$ref": "#/components/schemas/UserCourseOverview" }
               }
             }
           },
-          "404": { "description": "Calendar event not found" }
+          "404": { "description": "User not found" }
         }
       }
     },
     "/courses": {
       "get": {
         "tags": ["Courses"],
-        "summary": "Get all courses for the career of the authenticated user",
-        "description": "Returns a list of courses. Supports filtering by any field via query string.",
+        "summary": "List courses",
+        "description": "Returns the catalog, the courses for a user career or the available ones, depending on the filters.",
         "parameters": [
-          { "name": "id", "in": "query", "schema": { "type": "string" } },
-          { "name": "name", "in": "query", "schema": { "type": "string" } },
-          { "name": "code", "in": "query", "schema": { "type": "string" } },
           {
-            "name": "correlates",
+            "name": "userId",
             "in": "query",
-            "schema": { "type": "string" },
-            "description": "Comma-separated list of course IDs"
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "User identifier to scope the result. Required when status=available."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["available"] },
+            "description": "If set to available, returns only courses the user can enroll next."
           }
         ],
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "A list of courses",
+            "description": "List of courses in any supported shape",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Course" }
+                  "oneOf": [
+                    { "type": "array", "items": { "$ref": "#/components/schemas/CourseSummary" } },
+                    { "type": "array", "items": { "$ref": "#/components/schemas/CourseForUser" } },
+                    { "type": "array", "items": { "$ref": "#/components/schemas/CourseAvailability" } }
+                  ]
                 }
+              }
+            }
+          },
+          "400": { "description": "Missing userId when status=available" },
+          "404": { "description": "No courses for the supplied filters" }
+        }
+      },
+      "post": {
+        "tags": ["Courses"],
+        "summary": "Create course",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCourseDto" } } }
+        },
+        "responses": {
+          "201": {
+            "description": "Stored course",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CourseDetail" }
               }
             }
           }
         }
       }
     },
-    "/courses/{id}": {
+    "/courses/{courseId}": {
       "get": {
         "tags": ["Courses"],
-        "summary": "Get a course by ID",
+        "summary": "Retrieve a course",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
-        "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Course details",
+            "description": "Course detail",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CourseDetail" } } }
+          },
+          "400": { "description": "Invalid id" },
+          "404": { "description": "Course not found" }
+        }
+      }
+    },
+    "/courses/{courseId}/commissions": {
+      "get": {
+        "tags": ["Commissions"],
+        "summary": "Commissions for a course",
+        "parameters": [
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["future", "in_progress", "past"] }, "description": "Filter by computed status" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Commissions with computed status",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Course" }
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Commission" } }
+              }
+            }
+          },
+          "404": { "description": "Course not found" }
+        }
+      },
+      "post": {
+        "tags": ["Commissions"],
+        "summary": "Create commission",
+        "parameters": [
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCommissionDto" } } }
+        },
+        "responses": {
+          "201": {
+            "description": "Stored commission",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Commission" }
               }
             }
           },
@@ -336,442 +218,550 @@
         }
       }
     },
-    "/courses/{id}/commissions": {
+    "/enrollments": {
       "get": {
-        "tags": ["Courses"],
-        "summary": "Get commissions for a course",
+        "tags": ["Enrollments"],
+        "summary": "Enrollments for a user",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "name": "days", "in": "query", "schema": { "type": "string" } },
-          {
-            "name": "startTime",
-            "in": "query",
-            "schema": { "type": "string", "format": "time" }
-          },
-          {
-            "name": "endTime",
-            "in": "query",
-            "schema": { "type": "string", "format": "time" }
-          },
-          {
-            "name": "shift",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": ["morning", "afternoon", "night"]
-            }
-          },
-          {
-            "name": "professorName",
-            "in": "query",
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "availableSpots",
-            "in": "query",
-            "schema": { "type": "integer" }
-          },
-          {
-            "name": "mode",
-            "in": "query",
-            "schema": { "type": "string", "enum": ["virtual", "in person"] }
-          }
+          { "name": "userId", "in": "query", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "A list of commissions",
+            "description": "Enrollments with latest history info",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Commission" }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/courses/{id}/commissions/{commissionId}/enroll": {
-      "post": {
-        "tags": ["Courses"],
-        "summary": "Enroll in a commission for a course",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "commissionId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "security": [{ "bearerAuth": [] }],
-        "responses": {
-          "200": {
-            "description": "Enrolled commission data",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Commission" }
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/EnrollmentListItem" } }
               }
             }
           },
-          "404": { "description": "Commission not found" }
+          "404": { "description": "No enrollments" }
         }
-      },
-      "delete": {
-        "tags": ["Courses"],
-        "summary": "Withdraw from a commission for a course",
+      }
+    },
+    "/enrollments/{commissionId}": {
+      "get": {
+        "tags": ["Enrollments"],
+        "summary": "Enrollment detail",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "commissionId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+          { "name": "commissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "userId", "in": "query", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Successfully withdrawn from commission"
+            "description": "Enrollment detail",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EnrollmentDetail" } } }
           },
-          "404": { "description": "Commission not found" }
+          "404": { "description": "Enrollment not found" }
         }
       }
     },
-    "/account/deposit": {
+    "/enrollments/{courseId}/commissions/{commissionId}": {
       "post": {
-        "tags": ["Account"],
-        "summary": "Deposit money into account",
-        "description": "Deposit a specified amount into the user's account using a credit/debit card.",
+        "tags": ["Enrollments"],
+        "summary": "Enroll in a commission",
+        "parameters": [
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "commissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "amount": {
-                    "type": "string",
-                    "description": "Amount to deposit (numeric string with 2 decimals)",
-                    "example": "2999.99"
-                  },
-                  "cardNumber": {
-                    "type": "string",
-                    "description": "Card number (16 digits)",
-                    "pattern": "^\\d{16}$",
-                    "example": "1234567812345678"
-                  },
-                  "expiration": {
-                    "type": "string",
-                    "description": "Card expiration date (MM/YY)",
-                    "pattern": "^(0[1-9]|1[0-2])\\/(\\d{2})$",
-                    "example": "12/27"
-                  },
-                  "cvv": {
-                    "type": "string",
-                    "description": "Card CVV (3 or 4 digits)",
-                    "pattern": "^\\d{3,4}$",
-                    "example": "123"
-                  }
-                },
-                "required": ["amount", "cardNumber", "expiration", "cvv"]
-              }
-            }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EnrollmentRequest" } } }
         },
         "responses": {
-          "200": {
-            "description": "New account balance after deposit",
+          "201": {
+            "description": "Enrollment and academic history created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AccountBalanceDto" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/account/balance": {
-      "get": {
-        "tags": ["Account"],
-        "summary": "Get current account balance",
-        "description": "Returns the current balance of the user's account.",
-        "security": [{ "bearerAuth": [] }],
-        "responses": {
-          "200": {
-            "description": "Current account balance",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/AccountBalanceDto" }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/purchases": {
-      "get": {
-        "tags": ["Purchases"],
-        "summary": "Get user purchases",
-        "description": "Returns a list of user purchases with product details and total spent.",
-        "security": [{ "bearerAuth": [] }],
-        "responses": {
-          "200": {
-            "description": "A list of purchases",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Purchase"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/academic-history": {
-      "get": {
-        "tags": ["AcademicHistory"],
-        "summary": "Get academic history",
-        "description": "Returns the user's academic history entries.",
-        "security": [{ "bearerAuth": [] }],
-        "responses": {
-          "200": {
-            "description": "A list of academic history entries",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "degreeName": { "type": "string" },
-                    "degreeCode": { "type": "string" },
-                    "courses": {
-                      "type": "array",
-                      "items": { "$ref": "#/components/schemas/AcademicHistoryEntry" }
-                    }
-                  },
-                  "required": ["degreeName", "degreeCode", "courses"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/courses/enrolled": {
-      "get": {
-        "tags": ["Courses"],
-        "summary": "Get all enrolled courses for the authenticated user",
-        "description": "Returns a list of courses the user is currently enrolled in.",
-        "security": [{ "bearerAuth": [] }],
-        "responses": {
-          "200": {
-            "description": "A list of enrolled courses",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "professorName": { "type": "string" },
-                      "startTime": { "type": "string", "format": "time" },
-                      "endTime": { "type": "string", "format": "time" },
-                      "classroom": { "type": "string" },
-                      "attendance": {
-                        "type": "object",
-                        "properties": {
-                          "total": { "type": "integer" },
-                          "assists": { "type": "integer" },
-                          "absents": { "type": "integer" },
-                          "assistPercentage": { "type": "number", "format": "float" }
-                        },
-                        "required": ["total", "assists", "absents", "assistPercentage"]
-                      },
-                      "exams": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "title": { "type": "string" },
-                            "date": { "type": "string", "format": "date" },
-                            "weight": { "type": "number", "format": "float" },
-                            "grade": { "type": "number", "format": "float" },
-                            "status": { "type": "string", "enum": ["pass", "fail"] }
-                          },
-                          "required": ["title", "date", "weight", "grade", "status"]
-                        }
-                      }
-                    },
-                    "required": ["professorName", "startTime", "endTime", "classroom", "attendance", "exams"]
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/courses/enrolled/{id}": {
-      "get": {
-        "tags": ["Courses"],
-        "summary": "Get details of an enrolled course by ID",
-        "description": "Returns details of a specific course the user is enrolled in.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "security": [{ "bearerAuth": [] }],
-        "responses": {
-          "200": {
-            "description": "Details of the enrolled course",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "professorName": { "type": "string" },
-                    "startTime": { "type": "string", "format": "time" },
-                    "endTime": { "type": "string", "format": "time" },
-                    "classroom": { "type": "string" },
-                    "attendance": {
-                      "type": "object",
-                      "properties": {
-                        "total": { "type": "integer" },
-                        "assists": { "type": "integer" },
-                        "absents": { "type": "integer" },
-                        "assistPercentage": { "type": "number", "format": "float" }
-                      },
-                      "required": ["total", "assists", "absents", "assistPercentage"]
-                    },
-                    "exams": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "title": { "type": "string" },
-                          "date": { "type": "string", "format": "date" },
-                          "weight": { "type": "number", "format": "float" },
-                          "grade": { "type": "number", "format": "float" },
-                          "status": { "type": "string", "enum": ["pass", "fail"] }
-                        },
-                        "required": ["title", "date", "weight", "grade", "status"]
-                      }
-                    }
-                  },
-                  "required": ["professorName", "startTime", "endTime", "classroom", "attendance", "exams"]
-                }
+                "schema": { "$ref": "#/components/schemas/EnrollmentResponse" }
               }
             }
           },
-          "404": { "description": "Enrolled course not found" }
+          "400": { "description": "User already enrolled or no spots" },
+          "403": { "description": "Missing correlatives" },
+          "404": { "description": "Invalid enrollment data" }
+        }
+      },
+      "delete": {
+        "tags": ["Enrollments"],
+        "summary": "Withdraw from a commission",
+        "parameters": [
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "commissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EnrollmentRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Withdrawal confirmation",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          },
+          "404": { "description": "Enrollment not found" }
+        }
+      }
+    },
+    "/calendar": {
+      "get": {
+        "tags": ["Calendar"],
+        "summary": "List events",
+        "parameters": [
+          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "eventType", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events in the given range",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CalendarEvent" } } }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Calendar"],
+        "summary": "Create calendar event",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCalendarEventDto" } } }
+        },
+        "responses": {
+          "201": {
+            "description": "Stored event",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CalendarEvent" } } }
+          }
+        }
+      }
+    },
+    "/calendar/{id}": {
+      "get": {
+        "tags": ["Calendar"],
+        "summary": "Get event",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Calendar event", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CalendarEvent" } } } },
+          "404": { "description": "Event not found" }
+        }
+      },
+      "put": {
+        "tags": ["Calendar"],
+        "summary": "Update calendar event",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CalendarEventUpdateDto" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated event", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CalendarEvent" } } } },
+          "404": { "description": "Event not found" }
+        }
+      },
+      "patch": {
+        "tags": ["Calendar"],
+        "summary": "Update event status",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CalendarStatusUpdateDto" } } }
+        },
+        "responses": {
+          "200": { "description": "Status updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CalendarEvent" } } } },
+          "404": { "description": "Event not found" }
+        }
+      }
+    },
+    "/calendar/user/{userId}": {
+      "get": {
+        "tags": ["Calendar"],
+        "summary": "Events for a user",
+        "parameters": [ { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Personal and global events", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CalendarEvent" } } } } },
+          "404": { "description": "User or events not found" }
         }
       }
     },
     "/notifications": {
       "get": {
         "tags": ["Notifications"],
-        "summary": "Get latest notifications",
-        "description": "Returns the latest 10 notifications (read or unread) for the authenticated user.",
+        "summary": "Get notifications",
+        "parameters": [
+          { "name": "userId", "in": "query", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["unread", "latest"] }, "description": "Defaults to latest. Use unread for unread only." }
+        ],
         "security": [{ "bearerAuth": [] }],
         "responses": {
-          "200": {
-            "description": "A list of latest notifications",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Notification" }
-                }
-              }
-            }
-          }
+          "200": { "description": "Notifications", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Notification" } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Create notification",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateNotificationDto" } } }
+        },
+        "responses": {
+          "201": { "description": "Stored notification", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Notification" } } } },
+          "404": { "description": "User not found" }
         }
       }
     },
-    "/notifications/unread": {
-      "get": {
+    "/notifications/{notificationId}": {
+      "patch": {
         "tags": ["Notifications"],
-        "summary": "Get unread notifications",
-        "description": "Returns all unread notifications for the authenticated user.",
+        "summary": "Update notification",
+        "parameters": [ { "name": "notificationId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotificationUpdateDto" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated notification", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Notification" } } } },
+          "404": { "description": "Notification not found" }
+        }
+      }
+    },
+    "/account/{userId}/balance": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get account balance",
+        "parameters": [ { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
         "security": [{ "bearerAuth": [] }],
         "responses": {
-          "200": {
-            "description": "A list of unread notifications",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Notification" }
-                }
-              }
-            }
-          }
+          "200": { "description": "Balance", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AccountBalanceDto" } } } },
+          "404": { "description": "Account not found" }
+        }
+      }
+    },
+    "/account/{userId}/transactions": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Deposit funds",
+        "parameters": [ { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DepositDto" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated balance", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AccountBalanceDto" } } } },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/commissions/{commissionId}/attendances": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Attendance list for a commission",
+        "parameters": [ { "name": "commissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Attendance records", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AttendanceRecord" } } } } }
+        }
+      }
+    },
+    "/commissions/{commissionId}/attendances/{userId}": {
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Mark attendance",
+        "parameters": [
+          { "name": "commissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AttendancePayload" } } }
+        },
+        "responses": {
+          "200": { "description": "Saved record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AttendanceRecord" } } } },
+          "404": { "description": "User or commission not found" }
+        }
+      },
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Attendance for a user",
+        "parameters": [
+          { "name": "commissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Chronological attendance", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AttendanceRecord" } } } } }
+        }
+      }
+    },
+    "/users/{userId}/purchases": {
+      "post": {
+        "tags": ["Purchases"],
+        "summary": "Create purchase",
+        "parameters": [ { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreatePurchaseDto" } } }
+        },
+        "responses": {
+          "201": { "description": "Stored purchase", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Purchase" } } } },
+          "404": { "description": "User not found" }
+        }
+      },
+      "get": {
+        "tags": ["Purchases"],
+        "summary": "List purchases",
+        "parameters": [ { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Purchase history", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Purchase" } } } } },
+          "404": { "description": "No purchases found" }
+        }
+      }
+    },
+    "/academic-history/{userId}": {
+      "get": {
+        "tags": ["AcademicHistory"],
+        "summary": "Academic history",
+        "parameters": [ { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "History entries", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AcademicHistoryEntry" } } } } },
+          "404": { "description": "History not found" }
+        }
+      }
+    },
+    "/academic-history/{userId}/courses/{courseId}": {
+      "patch": {
+        "tags": ["AcademicHistory"],
+        "summary": "Update grade on history",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "courseId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AcademicHistoryUpdateDto" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated record", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AcademicHistoryEntry" } } } },
+          "404": { "description": "Record not found" }
+        }
+      }
+    },
+    "/grades/user/{userId}": {
+      "get": {
+        "tags": ["Grades"],
+        "summary": "Grades by user",
+        "parameters": [ { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "responses": {
+          "200": { "description": "Grades", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Grade" } } } } },
+          "404": { "description": "No grades" }
+        }
+      }
+    },
+    "/grades/user/{userId}/commission/{commissionId}": {
+      "get": {
+        "tags": ["Grades"],
+        "summary": "Grade detail",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "commissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Grade info", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GradeDetail" } } } },
+          "404": { "description": "Grade not found" }
+        }
+      },
+      "patch": {
+        "tags": ["Grades"],
+        "summary": "Update grade",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "commissionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateGradeDto" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated grade", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Grade" } } } },
+          "404": { "description": "Grade not found" }
+        }
+      }
+    },
+    "/careers": {
+      "get": {
+        "tags": ["Careers"],
+        "summary": "List careers",
+        "responses": {
+          "200": { "description": "Careers with courses", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Career" } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Careers"],
+        "summary": "Create career",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CareerCreateDto" } } }
+        },
+        "responses": {
+          "201": { "description": "Stored career", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Career" } } } }
+        }
+      }
+    },
+    "/careers/{careerId}": {
+      "get": {
+        "tags": ["Careers"],
+        "summary": "Get career",
+        "parameters": [ { "name": "careerId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "responses": {
+          "200": { "description": "Career detail", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Career" } } } },
+          "404": { "description": "Career not found" }
+        }
+      }
+    },
+    "/careers/{careerId}/courses": {
+      "post": {
+        "tags": ["Careers"],
+        "summary": "Attach course to career",
+        "parameters": [ { "name": "careerId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CareerCourseLinkDto" } } }
+        },
+        "responses": {
+          "200": { "description": "Link confirmation", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponse" } } } },
+          "400": { "description": "Course already linked" },
+          "404": { "description": "Career or course not found" }
         }
       }
     }
   },
   "components": {
     "schemas": {
-      "Course": {
+      "CreateUserDto": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "code": { "type": "string" },
-          "correlates": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "IDs of correlated courses"
-          }
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 4 }
         },
-        "required": ["id", "name", "code", "correlates"]
+        "required": ["firstName", "lastName", "email", "password"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "UserSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string", "format": "email" }
+        }
+      },
+      "CourseEnrollmentSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "UserCourseOverview": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "courses": { "type": "array", "items": { "$ref": "#/components/schemas/CourseEnrollmentSummary" } }
+        }
+      },
+      "CreateCourseDto": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "correlates": { "type": "array", "items": { "type": "string", "format": "uuid" } }
+        },
+        "required": ["code", "name"]
+      },
+      "CourseCareerSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" }
+        }
+      },
+      "CorrelativeSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "code": { "type": "string" }
+        }
       },
       "Commission": {
         "type": "object",
         "properties": {
+          "id": { "type": "string", "format": "uuid" },
           "days": { "type": "string" },
-          "startTime": { "type": "string", "format": "time" },
-          "endTime": { "type": "string", "format": "time" },
-          "shift": {
-            "type": "string",
-            "enum": ["morning", "afternoon", "night"]
-          },
+          "startTime": { "type": "string" },
+          "endTime": { "type": "string" },
+          "shift": { "type": "string", "enum": ["morning", "afternoon", "night"] },
           "classRoom": { "type": "string" },
           "professorName": { "type": "string" },
           "availableSpots": { "type": "integer" },
           "totalSpots": { "type": "integer" },
           "mode": { "type": "string", "enum": ["virtual", "in person"] },
-          "price": {
-            "type": "string",
-            "description": "Price of the commission",
-            "example": "1500.00"
-          }
+          "price": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" },
+          "status": { "type": "string", "enum": ["future", "in_progress", "past"], "nullable": true }
+        }
+      },
+      "CreateCommissionDto": {
+        "type": "object",
+        "properties": {
+          "days": { "type": "string" },
+          "startTime": { "type": "string" },
+          "endTime": { "type": "string" },
+          "shift": { "type": "string", "enum": ["morning", "afternoon", "night"] },
+          "classRoom": { "type": "string" },
+          "professorName": { "type": "string" },
+          "availableSpots": { "type": "integer" },
+          "totalSpots": { "type": "integer" },
+          "mode": { "type": "string", "enum": ["virtual", "in person"] },
+          "price": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" }
         },
         "required": [
           "days",
@@ -786,100 +776,366 @@
           "price"
         ]
       },
+      "CourseSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "careers": { "type": "array", "items": { "type": "string" } },
+          "totalCommissions": { "type": "integer" }
+        }
+      },
+      "CourseForUser": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "careers": { "type": "array", "items": { "type": "string" } },
+          "correlatives": { "type": "array", "items": { "$ref": "#/components/schemas/CorrelativeSummary" } }
+        }
+      },
+      "CommissionAvailability": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "days": { "type": "string" },
+          "shift": { "type": "string" },
+          "mode": { "type": "string", "enum": ["virtual", "in person"] },
+          "startTime": { "type": "string" },
+          "endTime": { "type": "string" },
+          "classRoom": { "type": "string" },
+          "professorName": { "type": "string" },
+          "availableSpots": { "type": "integer" },
+          "totalSpots": { "type": "integer" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" }
+        }
+      },
+      "CourseAvailability": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "correlatives": { "type": "array", "items": { "$ref": "#/components/schemas/CorrelativeSummary" } },
+          "status": { "type": "string", "enum": ["available", "in_progress", "passed"] },
+          "commissions": { "type": "array", "items": { "$ref": "#/components/schemas/CommissionAvailability" } }
+        }
+      },
+      "CourseDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "careers": { "type": "array", "items": { "$ref": "#/components/schemas/CourseCareerSummary" } },
+          "correlatives": { "type": "array", "items": { "$ref": "#/components/schemas/CorrelativeSummary" } },
+          "commissions": { "type": "array", "items": { "$ref": "#/components/schemas/Commission" } }
+        }
+      },
+      "EnrollmentRequest": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "format": "uuid" }
+        },
+        "required": ["userId"]
+      },
+      "EnrollmentResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "enrollment": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "course": { "$ref": "#/components/schemas/CourseEnrollmentSummary" },
+              "commission": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string", "format": "uuid" },
+                  "days": { "type": "string" },
+                  "shift": { "type": "string" },
+                  "professorName": { "type": "string" }
+                }
+              }
+            }
+          },
+          "academicHistory": {
+            "type": "object",
+            "properties": {
+              "semester": { "type": "string" },
+              "year": { "type": "string" },
+              "finalNote": { "type": "string", "nullable": true },
+              "status": { "type": "string" }
+            }
+          }
+        }
+      },
+      "EnrollmentListItem": {
+        "type": "object",
+        "properties": {
+          "enrollmentId": { "type": "string", "format": "uuid" },
+          "course": { "$ref": "#/components/schemas/CourseEnrollmentSummary" },
+          "commission": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "professorName": { "type": "string" },
+              "shift": { "type": "string" },
+              "days": { "type": "string" },
+              "startTime": { "type": "string" },
+              "endTime": { "type": "string" },
+              "classroom": { "type": "string" }
+            }
+          },
+          "status": { "type": "string", "enum": ["in_progress", "passed", "failed"] },
+          "finalNote": { "type": "string", "nullable": true }
+        }
+      },
+      "EnrollmentDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "course": { "$ref": "#/components/schemas/CourseEnrollmentSummary" },
+          "commission": { "$ref": "#/components/schemas/Commission" }
+        }
+      },
+      "CreateCalendarEventDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "startDateTime": { "type": "string", "format": "date-time" },
+          "endDateTime": { "type": "string", "format": "date-time" },
+          "eventType": { "type": "string" },
+          "date": { "type": "string", "format": "date" },
+          "sourceModule": { "type": "string" },
+          "eventStatus": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "userId": { "type": "string", "format": "uuid" }
+        },
+        "required": ["id", "title", "startDateTime", "endDateTime"]
+      },
+      "CalendarEventUpdateDto": {
+        "type": "object",
+        "description": "Any subset of CreateCalendarEventDto fields",
+        "additionalProperties": true
+      },
+      "CalendarStatusUpdateDto": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string" }
+        },
+        "required": ["status"]
+      },
+      "CalendarEvent": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "startDateTime": { "type": "string", "format": "date-time" },
+          "endDateTime": { "type": "string", "format": "date-time" },
+          "eventType": { "type": "string" },
+          "eventStatus": { "type": "string" },
+          "sourceModule": { "type": "string" },
+          "date": { "type": "string", "format": "date" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "user": { "$ref": "#/components/schemas/UserSummary" }
+        }
+      },
+      "CreateNotificationDto": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "type": { "type": "string", "enum": ["sanction", "exam", "event"] }
+        },
+        "required": ["userId", "title", "message", "type"]
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "user": { "$ref": "#/components/schemas/UserSummary" },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "type": { "type": "string" },
+          "isRead": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "NotificationUpdateDto": {
+        "type": "object",
+        "properties": {
+          "isRead": { "type": "boolean" }
+        }
+      },
       "AccountBalanceDto": {
         "type": "object",
         "properties": {
-          "balance": {
-            "type": "string",
-            "description": "Current account balance (numeric string with 2 decimals)",
-            "example": "5000.00"
-          }
-        },
-        "required": ["balance"]
+          "balance": { "type": "string", "example": "1000.00" }
+        }
       },
-      "Purchase": {
+      "DepositDto": {
+        "type": "object",
+        "properties": {
+          "amount": { "type": "string" },
+          "cardNumber": { "type": "string", "pattern": "^\\d{16}$" },
+          "expiration": { "type": "string", "pattern": "^(0[1-9]|1[0-2])/(\\d{2})$" },
+          "cvv": { "type": "string", "pattern": "^\\d{3,4}$" }
+        },
+        "required": ["amount", "cardNumber", "expiration", "cvv"]
+      },
+      "AttendancePayload": {
+        "type": "object",
+        "properties": {
+          "present": { "type": "boolean" },
+          "date": { "type": "string", "format": "date" }
+        },
+        "required": ["present"]
+      },
+      "AttendanceRecord": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "date": { "type": "string", "format": "date" },
+          "present": { "type": "boolean" },
+          "user": { "$ref": "#/components/schemas/UserSummary" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreatePurchaseDto": {
         "type": "object",
         "properties": {
           "product": {
             "type": "object",
             "properties": {
-              "name": { "type": "string", "example": "Notebook" },
-              "description": {
-                "type": "string",
-                "example": "A ruled notebook for class notes."
-              },
-              "productCode": { "type": "string", "example": "NB-001" },
-              "subtotal": {
-                "type": "string",
-                "description": "Subtotal for this product (numeric string with 2 decimals)",
-                "example": "199.99"
-              },
-              "quantity": { "type": "integer", "example": 1 }
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "productCode": { "type": "string" },
+              "subtotal": { "type": "string" },
+              "quantity": { "type": "integer" }
             },
-            "required": [
-              "name",
-              "description",
-              "productCode",
-              "subtotal",
-              "quantity"
-            ]
+            "required": ["name", "description", "productCode", "subtotal", "quantity"]
           },
-          "date": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2025-09-07T12:00:00Z"
-          },
-          "total": {
-            "type": "string",
-            "description": "Total spent (numeric string with 2 decimals)",
-            "example": "199.99"
-          }
+          "total": { "type": "string" }
         },
-        "required": ["product", "date", "total"]
+        "required": ["product", "total"]
+      },
+      "Purchase": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "user": { "$ref": "#/components/schemas/UserSummary" },
+          "product": { "$ref": "#/components/schemas/CreatePurchaseDto/properties/product" },
+          "date": { "type": "string", "format": "date-time" },
+          "total": { "type": "string" }
+        }
       },
       "AcademicHistoryEntry": {
         "type": "object",
         "properties": {
-          "courseId": { "type": "string" },
-          "commissionId": { "type": "string" },
-          "semester": {
-            "type": "string",
-            "enum": ["1C", "2C"]
-          },
-          "year": { "type": "string", "example": "2025" },
+          "id": { "type": "string", "format": "uuid" },
+          "course": { "$ref": "#/components/schemas/CourseEnrollmentSummary" },
+          "commission": { "$ref": "#/components/schemas/Commission" },
+          "semester": { "type": "string" },
+          "year": { "type": "string" },
+          "status": { "type": "string", "enum": ["in_progress", "passed", "failed"] },
+          "finalNote": { "type": "string", "nullable": true }
+        }
+      },
+      "AcademicHistoryUpdateDto": {
+        "type": "object",
+        "properties": {
           "finalNote": { "type": "string" },
           "status": { "type": "string", "enum": ["passed", "failed"] }
         },
-        "required": [
-          "courseId",
-          "commissionId",
-          "semester",
-          "year",
-          "finalNote",
-          "status"
-        ]
+        "required": ["finalNote", "status"]
       },
-      "Notification": {
+      "Grade": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "Unique identifier for the notification" },
-          "type": { 
-            "type": "string", 
-            "enum": ["sanction", "event", "exam"],
-            "description": "Type of notification"
+          "id": { "type": "string", "format": "uuid" },
+          "commission": { "$ref": "#/components/schemas/Commission" },
+          "firstExam": { "type": "number", "nullable": true },
+          "secondExam": { "type": "number", "nullable": true },
+          "finalExam": { "type": "number", "nullable": true },
+          "status": { "type": "string", "enum": ["in_progress", "passed", "failed"] }
+        }
+      },
+      "GradeDetail": {
+        "type": "object",
+        "properties": {
+          "commission": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "professor": { "type": "string" },
+              "shift": { "type": "string" },
+              "days": { "type": "string" }
+            }
           },
-          "title": { "type": "string", "description": "Title of the notification" },
-          "description": { "type": "string", "description": "Description of the notification" },
-          "redirectId": { "type": "string", "description": "ID to redirect to when notification is clicked" }
+          "firstExam": { "type": "number", "nullable": true },
+          "secondExam": { "type": "number", "nullable": true },
+          "finalExam": { "type": "number", "nullable": true },
+          "status": { "type": "string" }
+        }
+      },
+      "UpdateGradeDto": {
+        "type": "object",
+        "properties": {
+          "firstExam": { "type": "number", "minimum": 0, "maximum": 10 },
+          "secondExam": { "type": "number", "minimum": 0, "maximum": 10 },
+          "finalExam": { "type": "number", "minimum": 0, "maximum": 10 },
+          "status": { "type": "string", "enum": ["in_progress", "passed", "failed"] }
+        }
+      },
+      "Career": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "courses": { "type": "array", "items": { "$ref": "#/components/schemas/CourseDetail" } }
+        }
+      },
+      "CareerCreateDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" }
         },
-        "required": ["id", "type", "title", "redirectId"]
+        "required": ["name"]
+      },
+      "CareerCourseLinkDto": {
+        "type": "object",
+        "properties": {
+          "courseId": { "type": "string", "format": "uuid" }
+        },
+        "required": ["courseId"]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        }
       }
     },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "scheme": "bearer"
       }
     }
   }
