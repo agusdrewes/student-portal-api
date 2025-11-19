@@ -1,4 +1,4 @@
-# ---- Etapa 1: build ----
+# ---- Etapa 1: Build ----
 FROM node:20-alpine AS build
 
 RUN apk add --no-cache python3 make g++ bash
@@ -11,11 +11,11 @@ COPY tsconfig*.json ./
 COPY nest-cli.json ./
 COPY src ./src
 
-# 👉 COMPILA EL PROYECTO (genera /app/dist)
+# 👉 COMPILAR A /app/dist
 RUN npm run build
 
 
-# ---- Etapa 2: runtime ----
+# ---- Etapa 2: Runtime ----
 FROM node:20-alpine
 
 WORKDIR /app
@@ -23,8 +23,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Copiamos la carpeta compilada de la etapa anterior
+# 👉 Copiar el build correcto
 COPY --from=build /app/dist ./dist
 
-# Arrancar Nest compilado
-CMD ["node", "dist/main.js"]
+# 👉 ***ESTE ES EL PUNTO CRÍTICO***
+# Railway debe ejecutar el archivo QUE SÍ EXISTE:
+CMD ["node", "dist/src/main.js"]
