@@ -8,6 +8,8 @@ RUN npm ci
 COPY tsconfig.json ./
 COPY nest-cli.json ./
 COPY src ./src
-COPY ormconfig.ts ./
 
-EXPOSE 3000
+# << BORRAR ESTE EXPOSE TAMBIÉN, ES INÚTIL >>
+# EXPOSE 3000
+
+CMD ["npm", "run", "start:prod"]
