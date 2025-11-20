@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
@@ -7,20 +7,24 @@ import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) { }
 
-  @Get()
-  findAll() {
-    return this.coursesService.findAll();
-  }
-
-  @Get('user')
-  findCoursesForUser(@Query('userId') userId: string) {
-    return this.coursesService.findCoursesForUser(userId);
-  }
-
   @UseGuards(JwtDecodeGuard)
-  @Get('available')
-  findAvailableCourses(@Query('userId') userId: string) {
-    return this.coursesService.findAvailableCoursesForUser(userId);
+  @Get()
+  findAll(
+    @Query('userId') userId?: string,
+    @Query('status') status?: string
+  ) {
+    if (status === 'available') {
+      if (!userId) {
+        throw new BadRequestException('userId is required to get available courses');
+      }
+      return this.coursesService.findAvailableCoursesForUser(userId);
+    }
+
+    if (userId) {
+      return this.coursesService.findCoursesForUser(userId);
+    }
+
+    return this.coursesService.findAll();
   }
 
   @Get(':id')

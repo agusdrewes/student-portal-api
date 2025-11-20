@@ -3,6 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  console.log(">>> INICIANDO SERVIDOR NEST <<<");
+
   const app = await NestFactory.create(AppModule);
 
   // ✅ Habilitar CORS (para permitir peticiones desde tu frontend)
@@ -20,7 +22,9 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(3000);
+  console.log(">>> A PUNTO DE LLAMAR app.listen(...) <<<", process.env.PORT);
+
+  await app.listen(Number(process.env.PORT) || 3000);
   console.log('🚀 Servidor corriendo en http://localhost:3000');
   console.log('✅ CORS habilitado para http://localhost:3002');
 }

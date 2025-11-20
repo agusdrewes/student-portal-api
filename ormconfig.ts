@@ -1,17 +1,29 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env' });
+
+// ⚠️ Cargar .env solo si existe (local). Railway NO usa .env
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 export default new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432', 10),
+  port: Number(process.env.DB_PORT || 5432),
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: ['src/**/*.entity.{ts,js}'],
-  migrations: ['src/migrations/*.{ts,js}'],
+
+  entities: ['dist/**/*.entity.js'],   // 👈 IMPORTANTE EN DOCKER
+
+  migrations: ['dist/migrations/*.js'],
+
   synchronize: false,
   logging: process.env.TYPEORM_LOGGING === 'true',
+
+  // 🔥 NECESARIO PARA AWS / RAILWAY / PG PUBLIC
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
