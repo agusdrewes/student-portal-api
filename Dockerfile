@@ -1,13 +1,30 @@
-FROM node:20-alpine
-RUN apk add --no-cache python3 make g++ bash
-WORKDIR /usr/src/app
+# ---- Stage 1: Build ----
+FROM node:20-alpine AS build
 
+RUN apk add --no-cache python3 make g++ bash
+WORKDIR /app
+
+# Copiar todo (no solo algunos archivos)
 COPY package*.json ./
+COPY tsconfig*.json ./
+COPY nest-cli.json ./
+COPY ormconfig.ts ./
+COPY src ./src
+
 RUN npm ci
 
-COPY tsconfig.json ./
-COPY nest-cli.json ./
-COPY src ./src
-COPY ormconfig.ts ./
+# Compilar el proyecto (genera /app/dist/src/main.js)
+RUN npm run build
 
-EXPOSE 3000
+
+# ---- Stage 2: Runtime ----
+FROM node:20-alpine
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Copiar todo el build generado
+COPY --from=build /app/dist ./dist
+
+CMD ["node", "dist/src/main.js"]

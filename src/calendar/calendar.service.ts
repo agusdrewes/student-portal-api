@@ -78,4 +78,13 @@ export class CalendarService {
     event.eventType = EventType.Cancelled;
     return this.calendarRepository.save(event);
   }
+
+  async updateStatus(id: string, status: string) {
+  const event = await this.calendarRepository.findOne({ where: { id } });
+  if (!event) throw new NotFoundException('Event not found');
+
+  event.eventStatus = status;
+  return this.calendarRepository.save(event);
+}
+
 }

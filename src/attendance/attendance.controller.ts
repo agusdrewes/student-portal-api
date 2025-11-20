@@ -2,34 +2,40 @@ import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
 
-@Controller('attendances')
+@UseGuards(JwtDecodeGuard)
+@Controller('commissions/:commissionId/attendances')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) { }
+  constructor(private readonly attendanceService: AttendanceService) {}
 
-  @Post(':commissionId/:userId')
+  // ✅ Registrar asistencia de un usuario en una comisión
+  @Post(':userId')
   markAttendance(
-    @Param('userId') userId: string,
     @Param('commissionId') commissionId: string,
+    @Param('userId') userId: string,
     @Body() body: { present: boolean; date?: string },
   ) {
     return this.attendanceService.markAttendance(
-      userId,
+      userId,           // 👈 mismo orden que antes
       commissionId,
       body.present,
       body.date,
     );
   }
 
-  @UseGuards(JwtDecodeGuard)
-  @Get(':commissionId/:userId')
+  // ✅ Obtener la asistencia de un usuario en una comisión
+  @Get(':userId')
   getUserAttendance(
-    @Param('userId') userId: string,
     @Param('commissionId') commissionId: string,
+    @Param('userId') userId: string,
   ) {
-    return this.attendanceService.getUserAttendance(userId, commissionId);
+    return this.attendanceService.getUserAttendance(
+      userId,           // 👈 mismo orden que antes
+      commissionId,
+    );
   }
 
-  @Get(':commissionId')
+  // ✅ Obtener todas las asistencias de una comisión
+  @Get()
   getCommissionAttendance(@Param('commissionId') commissionId: string) {
     return this.attendanceService.getCommissionAttendance(commissionId);
   }
