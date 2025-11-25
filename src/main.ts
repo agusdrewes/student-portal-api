@@ -9,7 +9,10 @@ async function bootstrap() {
 
   // ✅ Habilitar CORS (para permitir peticiones desde tu frontend)
   app.enableCors({
-    origin: 'http://localhost:3002', // 👈 dominio del front
+    origin: [
+      "http://localhost:3002",
+      "https://student-portal-front-production.up.railway.app",
+    ],    
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // necesario si usás cookies o headers de autenticación
   });
