@@ -12,25 +12,21 @@ export class Purchase {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // 🧍 Relación con el usuario que hizo la compra
   @ManyToOne(() => User, (user) => user.purchases, { eager: true })
   user: User;
 
-  // 🧾 Producto comprado (JSON embebido)
   @Column('jsonb')
   product: {
     name: string;
     description: string;
     productCode: string;
-    subtotal: string; // con 2 decimales como string
+    subtotal: string;
     quantity: number;
   };
 
-  // 🗓 Fecha de compra
   @CreateDateColumn()
   date: Date;
 
-  // 💰 Total gastado
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   total: string;
 }

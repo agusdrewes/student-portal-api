@@ -60,7 +60,6 @@ export class EnrollmentsService {
       this.logger.log(`Evento enviado al Hub → ${endpoint}`);
     } catch (err) {
       this.logger.error(`Error enviando evento al Hub: ${err.message}`);
-      // opcional: guardalo en una tabla local para reintentar más tarde
     }
   }
 
@@ -161,7 +160,6 @@ export class EnrollmentsService {
 
   }
 
-
   async withdraw(userId: string, commissionId: string) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },
@@ -235,8 +233,6 @@ export class EnrollmentsService {
     });
   }
 
-
-
   async findEnrollmentDetail(userId: string, commissionId: string) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },
@@ -265,6 +261,4 @@ export class EnrollmentsService {
         : null,
     };
   }
-
-
 }

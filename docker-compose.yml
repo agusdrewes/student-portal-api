@@ -2,14 +2,14 @@ services:
   db:
     image: postgres:16-alpine
     container_name: studentportal_db
-    # platform: linux/arm64/v8   # <- si estás en M1/M2 y llegara a hacer falta
+    # platform: linux/arm64/v8   
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "${DB_PORT}:5432"      # expone 5432 al host
+      - "${DB_PORT}:5432"     
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

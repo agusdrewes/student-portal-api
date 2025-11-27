@@ -39,11 +39,10 @@ export class CalendarService {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
   
-    // Trae eventos personales O globales (sin userId)
     const events = await this.calendarRepository.find({
       where: [
-        { user: { id: userId } }, // eventos personales
-        { user: IsNull() },           // eventos generales
+        { user: { id: userId } }, 
+        { user: IsNull() },          
       ],
       order: { date: 'ASC' },
       relations: ['user'],
