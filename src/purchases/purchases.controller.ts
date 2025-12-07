@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
@@ -30,5 +30,14 @@ export class PurchasesController {
     ) {
       return this.purchasesService.syncTransfers(userUuid,token);
     }
+
+    @Get('store/sync')
+  @UseGuards(JwtDecodeGuard)
+  async syncStorePurchases(@User('sub') userUuid: string, @Req() req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.purchasesService.syncStorePurchases(userUuid, token);
+  }
+
+
 
 }

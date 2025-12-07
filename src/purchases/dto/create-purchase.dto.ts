@@ -1,16 +1,13 @@
-import { IsNotEmpty, IsString, IsNumber, IsObject } from 'class-validator';
+import { IsNotEmpty, IsString, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ProductDto } from './product.dto';
 
 export class CreatePurchaseDto {
   
-  @IsObject()
-  @IsNotEmpty()
-  product: {
-    name: string;
-    description: string;
-    productCode: string;
-    subtotal: string;
-    quantity: number;
-  };
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductDto)
+  product: ProductDto[];
 
   @IsNotEmpty()
   @IsString()
