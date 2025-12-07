@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Purchase } from './entities/purchase.entity';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { User } from '../user/entities/user.entity';
+import axios from 'axios';
 
 @Injectable()
 export class PurchasesService {
@@ -44,4 +45,44 @@ export class PurchasesService {
       total: p.total,
     }));
   }
+  async syncTransfers(userUuid: string, token: string) {
+    // 1. Buscar usuario (ajustaremos este campo cuando me pases user.entity.ts)
+    const user = await this.userRepo.findOne({
+      where: { id: userUuid }, 
+    });
+  
+    if (!user) throw new Error('Usuario no encontrado');
+  
+    // 2. Llamar a CORE
+    const response = await axios.get(
+      'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers/mine',
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+  
+    const transfers = response.data.data;
+    const saved: Purchase[] = [];
+
+    for (const t of transfers) {
+      const purchase = this.purchaseRepo.create({
+        user,
+        product: {
+          name: t.description,
+          description: 'Transferencia CORE',
+          productCode: t.to_wallet_uuid,
+          subtotal: t.amount,
+          quantity: 1,
+        },
+        total: t.amount,
+      });
+
+      const inserted = await this.purchaseRepo.save(purchase);
+      saved.push(inserted); // ✔ ahora sí funciona
+    }
+  
+    return saved;
+  }
+  
+  
 }
