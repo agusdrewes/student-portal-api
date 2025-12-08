@@ -46,5 +46,6 @@ export class User {
 
   @OneToMany(() => Grade, (grade) => grade.user)
   grades: Grade[];
+    storePurchases: any;
 
 }
