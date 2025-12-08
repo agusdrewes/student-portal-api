@@ -1,14 +1,14 @@
 import { Controller, Get, Post, Body, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
 @Controller('/notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   // ✅ Usa query string en lugar de /unread
-  @UseGuards(JwtDecodeGuard)
+  @UseGuards(ExternalJwtAuthGuard)
   @Get()
   getNotifications(
     @Query('userId') userId: string,
@@ -25,7 +25,7 @@ export class NotificationsController {
     return this.notificationsService.create(dto);
   }
 
-  @UseGuards(JwtDecodeGuard)
+  @UseGuards(ExternalJwtAuthGuard)
    @Patch(':notificationId')
   update(
     @Param('notificationId') id: string,

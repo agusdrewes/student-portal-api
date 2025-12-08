@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { JwtDecodeGuard } from './jwt-decode.guard';
+import { ExternalJwtAuthGuard } from './external-jwt.guard';
 
 @Module({
-  providers: [JwtDecodeGuard],
-  exports: [JwtDecodeGuard],
+  providers: [ExternalJwtAuthGuard],
+  exports: [ExternalJwtAuthGuard],
 })
 export class AuthModule {}

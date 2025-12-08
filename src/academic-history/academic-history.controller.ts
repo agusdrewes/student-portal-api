@@ -1,12 +1,12 @@
 import { Controller, Get, Param, Patch, Body, UseGuards } from '@nestjs/common';
 import { AcademicHistoryService } from './academic-history.service';
-import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
 @Controller('academic-history')
 export class AcademicHistoryController {
   constructor(private readonly academicHistoryService: AcademicHistoryService) {}
 
-  @UseGuards(JwtDecodeGuard)
+  @UseGuards(ExternalJwtAuthGuard)
   @Get(':userId')
   getUserHistory(@Param('userId') userId: string) {
     return this.academicHistoryService.getUserHistory(userId);
