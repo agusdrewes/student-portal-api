@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from 'typeorm';
 import { Enrollment } from '../../enrollment/entities/enrollment.entity';
 import { AcademicHistory } from '../../academic-history/entities/academic-history.entity';
 import { Career } from '../../career/entities/career.entity';
@@ -10,20 +10,14 @@ import { Grade } from 'src/grades/entities/grade.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id: string;
 
   @Column()
-  firstName: string;
-
-  @Column()
-  lastName: string;
+  name: string;
 
   @Column({ unique: true })
   email: string;
-
-  @Column()
-  password: string;
 
   @OneToMany(() => Enrollment, (enrollment) => enrollment.user)
   enrollments: Enrollment[];
