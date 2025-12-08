@@ -32,4 +32,11 @@ export class PurchasesController {
     return this.purchasesService.syncTransfers(userUuid, token);
   }
 
+  @Get('store/sync')
+  @UseGuards(JwtDecodeGuard)
+  async syncStorePurchases(@User('sub') userUuid: string, @Req() req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.purchasesService.syncStorePurchases(userUuid, token);
+  }
+
 }

@@ -94,5 +94,80 @@ export class PurchasesService {
       throw new Error('Error al sincronizar transferencias');
     }
   }
+  async syncStorePurchases(userUuid: string, token: string) {
+    const user = await this.userRepo.findOne({ where: { id: userUuid } });
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    const { data: orders } = await axios.get(
+      `https://uadestore.onrender.com/api/orders/me?userId=${userUuid}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    const existing = await this.purchaseRepo.find({
+      where: { user: { id: user.id } },
+    });
+
+    const existingDates = new Set(existing.map((p) => p.date.toISOString()));
+
+    const savedPurchases: Purchase[] = [];
+
+    for (const order of orders) {
+      const orderDateISO = new Date(order.created_at).toISOString();
+      if (existingDates.has(orderDateISO)) continue;
+
+      const items = order.Item_compra ?? [];
+
+      // 🟡 Caso sin items → inserto compra genérica
+      if (items.length === 0) {
+        const purchase = this.purchaseRepo.create({
+          user,
+          total: order.total_compra.toString(),
+          date: new Date(order.created_at),
+          product: [
+            {
+              name: "Compra UADE Store",
+              description: "Sin detalles",
+              productCode: `store-${order.id}`,
+              subtotal: order.total_compra.toString(),
+              quantity: 1,
+            },
+          ],
+        });
+
+        const saved = await this.purchaseRepo.save(purchase);
+        savedPurchases.push(saved);
+        continue;
+      }
+
+      const productArray = items.map((item) => {
+        const articulo = item?.Stock?.Articulo;
+      
+        return {
+          name: articulo?.Titulo ?? "Producto UADE Store",
+          description: articulo?.descripcion ?? "Sin descripción",
+          productCode: `store-${item.id}`,
+          subtotal: item?.subtotal?.toString(),
+          quantity: item?.cantidad ?? 1,
+        };
+      });
+      
+
+      const purchase = this.purchaseRepo.create({
+        user,
+        total: order.total_compra.toString(),
+        date: new Date(order.created_at),
+      });
+      
+
+      const saved = await this.purchaseRepo.save(purchase);
+      savedPurchases.push(saved);
+    }
+
+    return {
+      success: true,
+      inserted: savedPurchases.length,
+      purchases: savedPurchases,
+    };
+  }
   
 }
