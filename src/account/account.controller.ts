@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/comm
 import { AccountService } from './account.service';
 import { DepositDto } from './dtos/account.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
+import { User } from 'src/auth/user.decorator';
 
 @Controller('account')
 export class AccountController {
@@ -13,14 +14,21 @@ export class AccountController {
     return this.accountService.getBalance(String(userId));
   }
 
+  
   @UseGuards(ExternalJwtAuthGuard)
   @Post(':userId/transactions')
-  deposit(@Param('userId') userId: string, @Body() dto: DepositDto) {
-    return this.accountService.deposit(String(userId), dto);
+  deposit(
+    @Param('userId') userId: string,
+    @Body() dto: DepositDto,
+    @Req() req
+  ) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.accountService.deposit(userId, dto, token);
   }
+  
 
   @Get('wallet/sync')
-    @UseGuards(JwtDecodeGuard)
+    @UseGuards(ExternalJwtAuthGuard)
     async syncStorePurchases(@User('sub') userUuid: string, @Req() req) {
       const token = req.headers.authorization?.split(' ')[1];
       return this.accountService.syncWallet(userUuid, token);
