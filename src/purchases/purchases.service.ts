@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { User } from '../user/entities/user.entity';
 import axios from 'axios';
-import { Purchase } from './entities/purchase.entity';
 
 @Injectable()
 export class PurchasesService {
@@ -47,116 +46,50 @@ export class PurchasesService {
       total: p.total,
     }));
   }
-
   async syncTransfers(userUuid: string, token: string) {
-    const user = await this.userRepo.findOne({ where: { id: userUuid } });
-    if (!user) throw new Error('Usuario no encontrado');
+    try {
+      const user = await this.userRepo.findOne({ where: { id: userUuid } });
+  
+      if (!user) throw new Error('Usuario no encontrado');
+  
+      // 2️⃣ Hacer la llamada a CORE
+      const response = await axios.get(
+        'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers/mine',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+  
+      const transfers = response.data.data;
+  
+      const saved: Purchase[] = [];
 
-    const response = await axios.get(
-      'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers/mine',
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
-
-    const transfers = response.data.data;
-    const saved: Purchase[] = [];
-
-    for (const t of transfers) {
-      const purchase = this.purchaseRepo.create({
-        user,
-        product: [
-          {
+      for (const t of transfers) {
+        const purchase = this.purchaseRepo.create({
+          user,
+          product: {
             name: t.description,
             description: 'Transferencia CORE',
             productCode: t.to_wallet_uuid,
             subtotal: t.amount,
             quantity: 1,
           },
-        ],
-        total: t.amount,
-      });
-
-      const inserted = await this.purchaseRepo.save(purchase);
-      saved.push(inserted);
-    }
-
-    return saved;
-  }
-
-  async syncStorePurchases(userUuid: string, token: string) {
-    const user = await this.userRepo.findOne({ where: { id: userUuid } });
-    if (!user) throw new NotFoundException('Usuario no encontrado');
-
-    const { data: orders } = await axios.get(
-      `https://uadestore.onrender.com/api/orders/me?userId=${userUuid}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    const existing = await this.purchaseRepo.find({
-      where: { user: { id: user.id } },
-    });
-
-    const existingDates = new Set(existing.map((p) => p.date.toISOString()));
-
-    const savedPurchases: Purchase[] = [];
-
-    for (const order of orders) {
-      const orderDateISO = new Date(order.created_at).toISOString();
-      if (existingDates.has(orderDateISO)) continue;
-
-      const items = order.Item_compra ?? [];
-
-      // 🟡 Caso sin items → inserto compra genérica
-      if (items.length === 0) {
-        const purchase = this.purchaseRepo.create({
-          user,
-          total: order.total_compra.toString(),
-          date: new Date(order.created_at),
-          product: [
-            {
-              name: "Compra UADE Store",
-              description: "Sin detalles",
-              productCode: `store-${order.id}`,
-              subtotal: order.total_compra.toString(),
-              quantity: 1,
-            },
-          ],
+          total: t.amount,
         });
 
-        const saved = await this.purchaseRepo.save(purchase);
-        savedPurchases.push(saved);
-        continue;
+        const inserted = await this.purchaseRepo.save(purchase);
+        saved.push(inserted); // ✔ ahora sí funciona
       }
 
-      const productArray = items.map((item) => {
-        const articulo = item?.Stock?.Articulo;
-      
-        return {
-          name: articulo?.Titulo ?? "Producto UADE Store",
-          description: articulo?.descripcion ?? "Sin descripción",
-          productCode: `store-${item.id}`,
-          subtotal: item?.subtotal?.toString(),
-          quantity: item?.cantidad ?? 1,
-        };
-      });
-      
-
-      const purchase = this.purchaseRepo.create({
-        user,
-        total: order.total_compra.toString(),
-        date: new Date(order.created_at),
-      });
-      
-
-      const saved = await this.purchaseRepo.save(purchase);
-      savedPurchases.push(saved);
+  
+      return saved;
+  
+    } catch (err) {
+      console.error(err);
+      throw new Error('Error al sincronizar transferencias');
     }
-
-    return {
-      success: true,
-      inserted: savedPurchases.length,
-      purchases: savedPurchases,
-    };
   }
+  
 }
