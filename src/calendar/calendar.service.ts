@@ -4,6 +4,7 @@ import { IsNull, Repository } from 'typeorm';
 import { CalendarEvent, EventType } from './entities/calendar-event.entity';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { User } from '../user/entities/user.entity';
+import axios from 'axios';
 
 @Injectable()
 export class CalendarService {
@@ -39,11 +40,10 @@ export class CalendarService {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
   
-    // Trae eventos personales O globales (sin userId)
     const events = await this.calendarRepository.find({
       where: [
-        { user: { id: userId } }, // eventos personales
-        { user: IsNull() },           // eventos generales
+        { user: { id: userId } }, 
+        { user: IsNull() },           
       ],
       order: { date: 'ASC' },
       relations: ['user'],
@@ -86,5 +86,75 @@ export class CalendarService {
   event.eventStatus = status;
   return this.calendarRepository.save(event);
 }
+async syncFromAcademic(userUuid: string, token: string) {
+  const url = 'https://eventos-academicos-service-1.onrender.com/api/events';
+  console.log("TOKEN USADO PARA SYNC:", token);
+
+
+  const response = await axios.get(url, {
+    params: {
+      endDate: "2030-12-30",
+    },
+    headers: {
+      authorization: `Bearer ${token}`,
+      userid: userUuid,
+    }
+  });
+
+  const events = Array.isArray(response.data) ? response.data : [];
+
+  console.log("🔥 Eventos recibidos:", events.length);
+
+  if (events.length === 0) {
+    return { success: true, inserted: 0, totalReceived: 0 };
+  }
+
+  const user = await this.userRepository.findOne({
+    where: { id: userUuid }
+  });
+
+  if (!user) throw new NotFoundException("User not found");
+
+  let inserted = 0;
+
+
+console.log("🔥 Eventos recibidos:", events.length);
+
+for (const ev of events) {
+
+  console.log("RAW EVENT KEYS:", Object.keys(ev));
+  console.log("ID QUE LLEGA:", ev.id);
+
+  const exists = await this.calendarRepository.findOne({
+    where: { id: ev.id }
+  });
+
+  if (exists) continue;
+
+  const newEvent = this.calendarRepository.create({
+    id: ev.id,  // ahora sí va a tener valor
+    title: ev.name ?? "(Sin título)",
+    description: ev.description ?? "",
+    startDateTime: new Date(ev.startTime),
+    endDateTime: new Date(ev.endTime),
+    eventType: "GENERAL",
+    sourceModule: "AcademicEvents",
+    user,
+    date: ev.startTime.substring(0, 10),
+  });
+
+  await this.calendarRepository.save(newEvent);
+  inserted++;
+
+
+  }
+
+  return {
+    success: true,
+    inserted,
+    totalReceived: events.length,
+  };
+}
+
 
 }

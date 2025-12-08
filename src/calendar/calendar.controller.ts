@@ -1,11 +1,24 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Patch, Req } from '@nestjs/common';
 import { CalendarService } from './calendar.service';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
+import { User } from 'src/auth/user.decorator';
 
 @Controller('calendar')
 export class CalendarController {
-  constructor(private readonly service: CalendarService) { }
+  constructor(private readonly service: CalendarService) {}
+
+  @Get('sync')
+@UseGuards(ExternalJwtAuthGuard)
+async syncFromAcademic(
+  @User('sub') userUuid: string,
+  @Req() req
+) {
+  const token = req.headers.authorization?.split(' ')[1];
+  console.log("TOKEN SYNC:", token);
+  return this.service.syncFromAcademic(userUuid, token);
+}
+
 
   @Get()
   getAll(
@@ -44,5 +57,4 @@ export class CalendarController {
   ) {
     return this.service.updateStatus(id, body.status);
   }
-
 }
