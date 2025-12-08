@@ -1,13 +1,13 @@
 import { Controller, Post, Delete, Param, Body, Get, Query, UseGuards } from '@nestjs/common';
 import { EnrollmentsService } from './enrollment.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
-import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
 @Controller('enrollments')
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) { }
 
-  @UseGuards(JwtDecodeGuard)
+  @UseGuards(ExternalJwtAuthGuard)
   @Post(':courseId/commissions/:commissionId')
   enroll(
     @Param('courseId') courseId: string,
@@ -17,7 +17,7 @@ export class EnrollmentsController {
     return this.enrollmentsService.enroll({ userId, courseId, commissionId });
   }
 
-  @UseGuards(JwtDecodeGuard)
+  @UseGuards(ExternalJwtAuthGuard)
   @Delete(':courseId/commissions/:commissionId')
   withdraw(
     @Param('courseId') courseId: string,
@@ -27,13 +27,13 @@ export class EnrollmentsController {
     return this.enrollmentsService.withdraw(userId, commissionId);
   }
 
-  @UseGuards(JwtDecodeGuard)
+  @UseGuards(ExternalJwtAuthGuard)
   @Get()
   getUserEnrollments(@Query('userId') userId: string) {
     return this.enrollmentsService.findByUser(userId);
   }
 
-  @UseGuards(JwtDecodeGuard)
+  @UseGuards(ExternalJwtAuthGuard)
   @Get(':commissionId')
   getEnrollmentDetail(
     @Param('commissionId') commissionId: string,

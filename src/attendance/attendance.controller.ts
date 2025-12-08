@@ -1,8 +1,8 @@
 import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
-import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
-@UseGuards(JwtDecodeGuard)
+@UseGuards(ExternalJwtAuthGuard)
 @Controller('commissions/:commissionId/attendances')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}

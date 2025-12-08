@@ -1,13 +1,13 @@
 import { Controller, Get, Post, Param, Body, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
-import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) { }
 
-  @UseGuards(JwtDecodeGuard)
+  @UseGuards(ExternalJwtAuthGuard)
   @Get()
   findAll(
     @Query('userId') userId?: string,
