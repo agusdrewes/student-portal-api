@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { User } from '../user/entities/user.entity';
 import axios from 'axios';
+import { Purchase } from './entities/purchase.entity';
 
 @Injectable()
 export class PurchasesService {
@@ -69,13 +70,15 @@ export class PurchasesService {
       for (const t of transfers) {
         const purchase = this.purchaseRepo.create({
           user,
-          product: {
-            name: t.description,
-            description: 'Transferencia CORE',
-            productCode: t.to_wallet_uuid,
-            subtotal: t.amount,
-            quantity: 1,
-          },
+          product: [
+            {
+              name: t.description,
+              description: 'Transferencia CORE',
+              productCode: t.to_wallet_uuid,
+              subtotal: t.amount,
+              quantity: 1,
+            },
+          ],
           total: t.amount,
         });
 
