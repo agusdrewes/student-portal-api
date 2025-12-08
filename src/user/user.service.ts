@@ -3,20 +3,47 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Career } from '../career/entities/career.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Career)
+    private careersRepository: Repository<Career>,
   ) { }
 
   findAll() {
     return this.usersRepository.find();
   }
 
-  create(createUserDto: CreateUserDto) {
-    const newUser = this.usersRepository.create(createUserDto);
+  async create(createUserDto: CreateUserDto) {
+    const existingUser = await this.usersRepository.findOne({
+      where: { id: createUserDto.uuid },
+    });
+
+    if (existingUser) {
+      return existingUser;
+    }
+
+    const career = await this.careersRepository.findOne({
+      where: { id: createUserDto.careerId },
+    });
+
+    if (!career) {
+      throw new NotFoundException(
+        `Career with id ${createUserDto.careerId} not found`,
+      );
+    }
+
+    const newUser = this.usersRepository.create({
+      id: createUserDto.uuid,
+      email: createUserDto.email,
+      name: createUserDto.name,
+      career,
+    });
+
     return this.usersRepository.save(newUser);
   }
   async findUserWithCourses(id: string) {
@@ -31,8 +58,7 @@ export class UserService {
 
     return {
       id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      name: user.name,
       email: user.email,
       courses: user.enrollments.map((enr) => ({
         id: enr.course.id,
