@@ -97,4 +97,17 @@ export class AccountService {
       balance: coreBalance.toFixed(2),
     };
   }
+
+  async getProfile(userUuid: string) {
+    const user = await this.userRepo.findOne({
+      where: { id: userUuid },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return {
+      name: user.name,
+      email: user.email,
+    };
+  }
 }

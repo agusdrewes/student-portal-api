@@ -88,7 +88,6 @@ export class CalendarService {
 }
 async syncFromAcademic(userUuid: string, token: string) {
   const url = 'https://eventos-academicos-service-1.onrender.com/api/events';
-  console.log("TOKEN USADO PARA SYNC:", token);
 
 
   const response = await axios.get(url, {
@@ -103,7 +102,6 @@ async syncFromAcademic(userUuid: string, token: string) {
 
   const events = Array.isArray(response.data) ? response.data : [];
 
-  console.log("🔥 Eventos recibidos:", events.length);
 
   if (events.length === 0) {
     return { success: true, inserted: 0, totalReceived: 0 };
@@ -118,13 +116,10 @@ async syncFromAcademic(userUuid: string, token: string) {
   let inserted = 0;
 
 
-console.log("🔥 Eventos recibidos:", events.length);
 
 for (const ev of events) {
 
-  console.log("RAW EVENT KEYS:", Object.keys(ev));
-  console.log("ID QUE LLEGA:", ev.id);
-
+ 
   const exists = await this.calendarRepository.findOne({
     where: { id: ev.id }
   });
@@ -132,12 +127,12 @@ for (const ev of events) {
   if (exists) continue;
 
   const newEvent = this.calendarRepository.create({
-    id: ev.id,  // ahora sí va a tener valor
+    id: ev.id,  
     title: ev.name ?? "(Sin título)",
     description: ev.description ?? "",
     startDateTime: new Date(ev.startTime),
     endDateTime: new Date(ev.endTime),
-    eventType: "GENERAL",
+    eventType: "Evento",
     sourceModule: "AcademicEvents",
     user,
     date: ev.startTime.substring(0, 10),

@@ -9,15 +9,14 @@ export class CalendarController {
   constructor(private readonly service: CalendarService) {}
 
   @Get('sync')
-@UseGuards(ExternalJwtAuthGuard)
-async syncFromAcademic(
-  @User('sub') userUuid: string,
-  @Req() req
-) {
-  const token = req.headers.authorization?.split(' ')[1];
-  console.log("TOKEN SYNC:", token);
-  return this.service.syncFromAcademic(userUuid, token);
-}
+  @UseGuards(ExternalJwtAuthGuard)
+  async syncFromAcademic(
+    @User('sub') userUuid: string,
+    @Req() req
+  ) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.service.syncFromAcademic(userUuid, token);
+  }
 
 
   @Get()

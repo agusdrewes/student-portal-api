@@ -33,5 +33,13 @@ export class AccountController {
       const token = req.headers.authorization?.split(' ')[1];
       return this.accountService.syncWallet(userUuid, token);
     }
+
+  @UseGuards(ExternalJwtAuthGuard)
+  @Get('me')
+  async getProfile(
+    @User('sub') userUuid: string,
+    @Req() req) {
+    return this.accountService.getProfile(userUuid);
+  }
    
 }
